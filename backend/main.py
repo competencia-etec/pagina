@@ -91,6 +91,9 @@ if __name__ == "__main__":
     if not redirect_uri.endswith(f":{PORT}"):
         redirect_uri = f"{redirect_uri}:{PORT}"
 
+    print(f"redirect_uri: {redirect_uri}, client_id: {
+        client_id}, auth_uri: {auth_uri}")
+
     tokens = authorize(
         redirect_uri=redirect_uri, client_id=client_id, auth_uri=auth_uri
     )
