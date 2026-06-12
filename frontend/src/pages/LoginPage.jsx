@@ -8,10 +8,10 @@ function handleGoogleLogin() {
 
 export function LeftPanel() { return null } // no left panel in mobile-first layout
 
-export default function LoginPage({ onGoRegister }) {
+export default function LoginPage({ onGoRegister, onGoHome, onLoginSimulate }) {
   return (
     <main className="auth-card" role="main">
-      <div className="logo">
+      <div className="logo" onClick={onGoHome} style={{ cursor: 'pointer' }} role="button" aria-label="Volver al inicio">
         <span className="logo-comp">comp</span>
         <span className="logo-etec">ETec</span>
       </div>
@@ -32,6 +32,16 @@ export default function LoginPage({ onGoRegister }) {
       >
         <GoogleIcon size={17} />
         Continuar con Google
+      </button>
+
+      {/* For development simulation without backend */}
+      <button
+        className="btn-play"
+        style={{ marginTop: '12px', width: '100%', fontStyle: 'italic' }}
+        onClick={onLoginSimulate}
+        aria-label="Simular inicio de sesión"
+      >
+        (Simular Login)
       </button>
 
       <p className="auth-footer">
