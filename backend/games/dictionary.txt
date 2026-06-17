@@ -885,6 +885,7 @@ caeos
 caete
 cafre
 cagar
+cagon
 caico
 caies
 cajas
@@ -3842,6 +3843,7 @@ pidio
 piejo
 pieza
 pifie
+pijas
 pilad
 pilan
 pilar
@@ -4098,6 +4100,7 @@ purra
 purre
 purri
 purro
+putas
 putee
 puton
 putos
@@ -5162,7 +5165,9 @@ troce
 troco
 troja
 troje
+trola
 trole
+trolo
 trona
 trone
 trono
