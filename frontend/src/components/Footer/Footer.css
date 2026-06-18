@@ -1,0 +1,16 @@
+.main-footer {
+  margin-top: auto;
+  padding: 20px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--border);
+  letter-spacing: 0.5px;
+}
+
+@media (min-width: 600px) {
+  .main-footer {
+    padding: 24px 32px;
+    font-size: 11px;
+  }
+}

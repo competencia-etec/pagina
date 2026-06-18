@@ -2,6 +2,7 @@ import { useState } from 'react'
 import MainPage from './pages/MainPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import Wordle from './pages/Wordle/Wordle'
 import './index.css'
 
 function App() {
@@ -21,8 +22,13 @@ function App() {
         onGoRegister={() => setPage('register')}
         onLogout={() => setUser(null)}
         user={user}
+        setPage={setPage}
       />
     )
+  }
+
+  if (page === 'wordle') {
+    return <Wordle />
   }
 
   return (
