@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import './Wordle.css'
 import Navbar from '../../components/Navbar/Navbar.jsx'
-import Footer from '../../components/Footer/Footer.jsx'
 import Keyboard from '../../components/Keyboard/Keyboard.jsx'
 
 const SOLUTION = 'REACT'
@@ -27,7 +26,7 @@ export default function Wordle({ onGoLogin, onGoRegister, onLogout, onGoHome, us
     } else if (key === 'BACKSPACE') {
       setCurrentGuess(prev => prev.slice(0, -1))
       setMessage('')
-    } else if (key.length === 1 && /^[a-zA-Z]$/.test(key)) {
+    } else if (key.length === 1 && /^[A-ZÑ]$/.test(key)) {
       if (currentGuess.length < 5) {
         setCurrentGuess(prev => (prev + key).toUpperCase())
         setMessage('')
