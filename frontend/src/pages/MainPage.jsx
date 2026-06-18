@@ -1,18 +1,17 @@
 import './MainPage.css'
 
 const LEADERBOARD = [
-  { rank: 1, name: 'Valentina R.', points: 2340 },
-  { rank: 2, name: 'Tomás G.', points: 2180 },
-  { rank: 3, name: 'Camila S.', points: 1950 },
-  { rank: 4, name: 'Mateo L.', points: 1720 },
-  { rank: 5, name: 'Sofía M.', points: 1580 },
+  { rank: 1, name: 'Valen_ETEC_5to 🏆', points: 2340 },
+  { rank: 2, name: 'Tomy_4to_C', points: 2180 },
+  { rank: 3, name: 'Cami_Sys', points: 1950 },
+  { rank: 4, name: 'Mateo_Linux', points: 1720 },
+  { rank: 5, name: 'Sofi_Compiler', points: 1580 },
 ]
 
 const GAMES = [
-  { id: 'trivia', title: 'Trivia Rápida', description: 'Respondé preguntas contra reloj.', icon: '⚡' },
-  { id: 'memoria', title: 'Memoria', description: 'Encontrá los pares antes que nadie.', icon: '🧠' },
-  { id: 'palabras', title: 'Cadena de Palabras', description: 'Formá la cadena más larga.', icon: '🔗' },
-  { id: 'codigo', title: 'Desafío Código', description: 'Resolvé problemas de lógica y programación.', icon: '💻' },
+  { id: 'wordle', title: 'Wordle', description: 'Adiviná la palabra técnica del día. Seis intentos para no quedar como un n00b.' },
+  { id: 'connections', title: 'Connections', description: 'Encontrá el patrón y armá los 4 grupos de conceptos. Ojo con las trampas.' },
+  { id: 'laberinto', title: 'Laberinto Falso 3D', description: 'Navegá a ciegas y encontrá la salida del pasillo antes de perderte en el código.' },
 ]
 
 export default function MainPage({ onGoLogin, onGoRegister, onLogout, user }) {
@@ -36,32 +35,27 @@ export default function MainPage({ onGoLogin, onGoRegister, onLogout, user }) {
               </button>
             </>
           ) : (
-            <>
-              <button id="btn-nav-login" className="btn-nav" onClick={onGoLogin}>
-                Iniciar sesión
-              </button>
-              <button id="btn-nav-register" className="btn-nav btn-nav--primary" onClick={onGoRegister}>
-                Registrate
-              </button>
-            </>
+            <button id="btn-nav-login" className="btn-nav" onClick={onGoLogin}>
+              Iniciar sesión
+            </button>
           )}
         </div>
       </nav>
 
       {/* ─── Hero ───────────────────────────────────────────────── */}
       <header className="main-hero">
-        <p className="main-eyebrow">competencia 2026</p>
-        <h1 className="main-title">Competí. Sumá puntos. Ganá.</h1>
+        <p className="main-eyebrow">TORNEO ETEC 2026</p>
+        <h1 className="main-title">¿Cuánto sabés de código? Demostralo.</h1>
         <p className="main-subtitle">
-          Desafiá a tus compañeros en juegos rápidos y escalá en el ranking de tu curso.
+          Desafíos rápidos para técnicos, programadores y curiosos. Escalá en la tabla y convertite en leyenda del aula.
         </p>
         {!isLoggedIn && (
           <div className="hero-cta">
             <button id="btn-hero-register" className="btn-primary" onClick={onGoRegister}>
-              Empezar ahora
+              Unirse al torneo
             </button>
             <button id="btn-hero-login" className="btn-secondary" onClick={onGoLogin}>
-              Ya tengo cuenta
+              Volver a entrar
             </button>
           </div>
         )}
@@ -73,12 +67,12 @@ export default function MainPage({ onGoLogin, onGoRegister, onLogout, user }) {
         <div className="games-grid">
           {GAMES.map((game) => (
             <article key={game.id} className="game-card" id={`game-${game.id}`}>
-              <span className="game-icon">{game.icon}</span>
               <h3 className="game-title">{game.title}</h3>
               <p className="game-desc">{game.description}</p>
-              <button className="btn-play" disabled={!isLoggedIn}>
-                {isLoggedIn ? 'Jugar' : 'Iniciá sesión'}
+              <button className="btn-play" id={`btn-play-${game.id}`}>
+                Jugar
               </button>
+              {!isLoggedIn && <span className="game-warning">Sin guardar puntos</span>}
             </article>
           ))}
         </div>
