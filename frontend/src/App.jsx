@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import MainPage from './pages/MainPage'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
+import MainPage from './pages/MainPage/MainPage'
+import LoginPage from './pages/LoginPage/LoginPage'
+import RegisterPage from './pages/RegisterPage/RegisterPage'
 import Wordle from './pages/Wordle/Wordle'
 import './index.css'
 
