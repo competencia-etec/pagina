@@ -1,0 +1,126 @@
+.main-hero {
+  text-align: center;
+  padding: 48px 20px 36px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.main-eyebrow {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.main-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.main-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.55;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.hero-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.btn-primary {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 12px 20px;
+  background: var(--navy);
+  color: var(--white);
+  border: 2px solid var(--navy);
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.btn-secondary {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 12px 20px;
+  background: transparent;
+  color: var(--navy);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: border-color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--navy);
+}
+
+@media (min-width: 600px) {
+  .main-hero {
+    padding: 72px 32px 56px;
+  }
+
+  .main-eyebrow {
+    font-size: 10px;
+    margin-bottom: 16px;
+  }
+
+  .main-title {
+    font-size: 38px;
+    letter-spacing: -1px;
+  }
+
+  .main-subtitle {
+    font-size: 15px;
+  }
+
+  .hero-cta {
+    flex-direction: row;
+    width: auto;
+    max-width: none;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .btn-primary, .btn-secondary {
+    width: auto;
+    padding: 14px 28px;
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 900px) {
+  .main-hero {
+    padding: 88px 32px 64px;
+  }
+
+  .main-title {
+    font-size: 46px;
+  }
+}
