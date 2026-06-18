@@ -16,9 +16,9 @@ const LEADERBOARD = [
 
 const GAMES = [
   { id: 'wordle', title: 'Wordle', description: 'Tenés 6 intentos para adivinar la palabra del día.', icon: '🇼' },
+  { id: 'connections', title: 'Connections', description: 'Encontrá los cuatro grupos de palabras que tienen algo en común.', icon: '🧩' },
   { id: 'memoria', title: 'Memoria', description: 'Encontrá los pares antes que nadie.', icon: '🧠' },
   { id: 'palabras', title: 'Cadena de Palabras', description: 'Formá la cadena más larga.', icon: '🔗' },
-  { id: 'codigo', title: 'Desafío Código', description: 'Resolvé problemas de lógica y programación.', icon: '💻' },
 ]
 
 export default function MainPage({ onGoLogin, onGoRegister, onLogout, user, setPage }) {
