@@ -14,10 +14,6 @@ function AppContent() {
   const [page, setPage] = useState('main')
   const [showCallback, setShowCallback] = useState(false)
 
-function App() {
-  const [page, setPage] = useState('main') // 'main' | 'login' | 'register' | 'wordle'
-  const [user, setUser] = useState(null) // null or { name: string }
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.has('token')) {
@@ -54,7 +50,15 @@ function App() {
     if (!isAuthenticated) {
       return <LoginPage onGoHome={login} onGoRegister={login} />
     }
-    return <Wordle onGoHome={() => setPage('main')} />
+    return (
+      <Wordle
+        onGoLogin={() => setPage('login')}
+        onGoRegister={() => setPage('register')}
+        onLogout={() => setPage('main')}
+        onGoHome={() => setPage('main')}
+        user={user}
+      />
+    )
   }
   if (page === 'strands') {
     return <Strands onGoHome={() => setPage('main')} />
@@ -78,12 +82,10 @@ function App() {
   )
 }
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <AppContent />
     </AuthProvider>
   )
 }
-
-export default App
