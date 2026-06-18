@@ -1,4 +1,4 @@
-import { GoogleIcon } from '../components/GoogleIcon'
+import { GoogleIcon } from '../../components/GoogleIcon/GoogleIcon.jsx'
 
 const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/api/auth/google'
 
