@@ -48,8 +48,6 @@ class UserInDB(User):
 
 password_hash = PasswordHash.recommended()
 
-DUMMY_HASH = password_hash.hash("dummypassword")
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
@@ -71,9 +69,6 @@ def get_user(db, username: str):
 
 def authenticate_user(fake_db, username: str, password: str):
     user = get_user(fake_db, username)
-    if not user:
-        verify_password(password, DUMMY_HASH)
-        return False
     if not verify_password(password, user.hashed_password):
         return False
     return user
@@ -142,10 +137,3 @@ async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> User:
     return current_user
-
-
-@app.get("/users/me/items/")
-async def read_own_items(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-):
-    return [{"item_id": "Foo", "owner": current_user.username}]
