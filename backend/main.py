@@ -1,12 +1,21 @@
 from fastapi import FastAPI
-from backend.core.database import engine, Base
-from backend.api.endpoints import auth, user
 
-# Create SQLite database and tables
-Base.metadata.create_all(bind=engine)
+from backend.api.endpoints.auth import add_endpoints as add_auth_endpoints
+from backend.api.endpoints.user import add_endpoints as add_user_endpoints
 
-app = FastAPI(title="OAuth API Starter")
 
-# Register routes
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(user.router, prefix="/users", tags=["Users"])
+fake_users_db = {
+    "johndoe": {
+        "username": "johndoe",
+        "full_name": "John Doe",
+        "email": "johndoe@example.com",
+        "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$wagCPXjifgvUFBzq4hqe3w$CYaIb8sB+wtD+Vu/P4uod1+Qof8h+1g7bbDlBID48Rc",
+        "disabled": False,
+    }
+}
+
+app = FastAPI()
+
+
+add_auth_endpoints(app, fake_users_db=fake_users_db)
+add_user_endpoints(app)
