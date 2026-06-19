@@ -3,11 +3,10 @@ import MainPage from './pages/MainPage/MainPage'
 import LoginPage from './pages/LoginPage/LoginPage'
 import RegisterPage from './pages/RegisterPage/RegisterPage'
 import Wordle from './pages/Wordle/Wordle'
-import Connections from './pages/Connections/Connections'
 import './index.css'
 
 function App() {
-  const [page, setPage] = useState('main') // 'main' | 'login' | 'register' | 'wordle' | 'connections'
+  const [page, setPage] = useState('main') // 'main' | 'login' | 'register' | 'wordle'
   const [user, setUser] = useState(null) // null or { name: string }
 
   // Simple handler to mock login for testing the UI states
@@ -30,10 +29,6 @@ function App() {
 
   if (page === 'wordle') {
     return <Wordle onGoHome={() => setPage('main')} />
-  }
-
-  if (page === 'connections') {
-    return <Connections onGoHome={() => setPage('main')} />
   }
 
   return (
