@@ -4,8 +4,9 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from backend.api.dependencies import authenticate_user, create_access_token
 from backend.models.user import Token
+from backend.services.oauth_service import create_access_token
+from backend.services.user_service import authenticate_user
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
