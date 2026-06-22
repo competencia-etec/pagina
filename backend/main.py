@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from backend.api.endpoints.auth import add_endpoints as add_auth_endpoints
 from backend.api.endpoints.user import add_endpoints as add_user_endpoints
+from backend.services.database import DatabaseConnection
 
 
 fake_users_db = {
@@ -15,6 +16,10 @@ fake_users_db = {
 }
 
 app = FastAPI()
+
+db = DatabaseConnection("sqlite+pysqlite:///:memory:", True)
+db.add_user("pepe", "pepardo", "pepe@tumama.com", "&#(*$&df")
+print(db.get_user("pepardo"))
 
 
 add_auth_endpoints(app, fake_users_db=fake_users_db)
