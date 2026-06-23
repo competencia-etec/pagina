@@ -17,9 +17,11 @@ fake_users_db = {
 
 app = FastAPI()
 
-db = DatabaseConnection("sqlite+pysqlite:///:memory:", True)
-db.add_user("pepe", "pepardo", "pepe@tumama.com", "&#(*$&df")
-print(db.get_user("pepardo"))
+# Testing
+db = DatabaseConnection()
+db.init("sqlite+pysqlite:///:memory:", True)
+db.add_user("pepe", "pepardo", "pepe@tumama.com", "fake_password")
+print(db.get_user("pepe"))
 
 
 add_auth_endpoints(app, fake_users_db=fake_users_db)

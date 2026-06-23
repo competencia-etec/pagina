@@ -17,7 +17,7 @@ def add_endpoints(app, fake_users_db):
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     ) -> Token:
         user = authenticate_user(
-            fake_users_db, form_data.username, form_data.password)
+            form_data.username, form_data.password)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -12,7 +12,16 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseConnection:
-    def __init__(self, url: str, echo: bool = False) -> None:
+    instance = None
+
+    # For singelton pattern
+    def __new__(cls):
+        if cls.instance is None:
+            cls.instance = super().__new__(cls)
+        return cls.instance
+
+    def init(self, url: str, echo: bool = False) -> None:
+        """Initializes DB, required!"""
         try:
             self.engine = create_engine(url, echo=echo)
 
@@ -22,6 +31,7 @@ class DatabaseConnection:
                     username VARCHAR(50) UNIQUE NOT NULL,
                     full_name VARCHAR(100) NOT NULL,
                     email VARCHAR(255) UNIQUE NOT NULL,
+                    hashed_password VARCHAR(255) NOT NULL,
                     disabled BOOLEAN DEFAULT FALSE NOT NULL
                 );
             """)
@@ -43,21 +53,23 @@ class DatabaseConnection:
                 if (user_mapping is None):
                     return None
 
-                user = User(user_mapping["username"],
-                            user_mapping["full_name"],
-                            user_mapping["email"],
-                            user_mapping["disabled"],
-                            )
+                user = User(
+                    username=user_mapping["username"],
+                    full_name=user_mapping["full_name"],
+                    email=user_mapping["email"],
+                    hashed_password=user_mapping["hashed_password"],
+                    disabled=user_mapping.get("disabled", False),
+                )
                 return user
         except SQLAlchemyError as e:
             logger.error(f"Error fetching user '{username}': {e}")
             return None
 
-    def add_user(self, username: str, full_name: str, email: str, disabled: bool = False) -> bool:
+    def add_user(self, username: str, full_name: str, email: str, hashed_password: str, disabled: bool = False) -> bool:
         """Create user in DB"""
         stmt = text("""
-            INSERT INTO users (username, full_name, email, disabled) 
-            VALUES (:username, :full_name, :email, :disabled)
+            INSERT INTO users (username, full_name, email, hashed_password, disabled)
+            VALUES (:username, :full_name, :email, :hashed_password, :disabled)
         """)
         try:
             with Session(self.engine) as session:
@@ -65,6 +77,7 @@ class DatabaseConnection:
                     "username": username,
                     "full_name": full_name,
                     "email": email,
+                    "hashed_password": hashed_password,
                     "disabled": disabled
                 })
                 session.commit()
@@ -111,7 +124,9 @@ class DatabaseConnection:
 
 if __name__ == "__main__":
     # Testing
-    db = DatabaseConnection("sqlite+pysqlite:///:memory:", False)
+    db = DatabaseConnection()
+    db.init("sqlite+pysqlite:///:memory:", False)
+
     db.add_user("pepe", "pepardo", "pepe@tumama.com", "&#(*$&df")
     print(db.get_user("pepe"))
     db.close()
