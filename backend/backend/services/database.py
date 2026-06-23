@@ -1,10 +1,10 @@
 import logging
-from typing import Optional, Dict, Any
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from backend.models.user import User
+
 
 # Configure standard logging
 logging.basicConfig(level=logging.INFO)
@@ -35,18 +35,28 @@ class DatabaseConnection:
             logger.critical(f"Failed to connect or initialize database: {e}")
             raise
 
-    def get_user(self, username: str) -> Optional[User]:
+    def get_user(self, username: str) -> User | None:
         stmt = text("SELECT * FROM users WHERE username = :username")
         try:
             with Session(self.engine) as session:
                 result = session.execute(stmt, {"username": username})
                 user_mapping = result.mappings().fetchone()
-                return dict(user) if user else None
+                if (user_mapping is None):
+                    return None
+
+                user = User(user_mapping["username"],
+                            user_mapping["full_name"],
+                            user_mapping["email"],
+                            user_mapping["hashed_password"],
+                            user_mapping["disabled"],
+                            )
+                return user
         except SQLAlchemyError as e:
             logger.error(f"Error fetching user '{username}': {e}")
             return None
 
     def add_user(self, username: str, full_name: str, email: str, hashed_password: str, disabled: bool = False) -> bool:
+        """Create user in DB"""
         stmt = text("""
             INSERT INTO users (username, full_name, email, hashed_password, disabled) 
             VALUES (:username, :full_name, :email, :hashed_password, :disabled)
@@ -106,5 +116,5 @@ if __name__ == "__main__":
     # Testing
     db = DatabaseConnection("sqlite+pysqlite:///:memory:", False)
     db.add_user("pepe", "pepardo", "pepe@tumama.com", "&#(*$&df")
-    print(db.get_user("pepardo"))
+    print(db.get_user("pepe"))
     db.close()
