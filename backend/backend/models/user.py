@@ -1,16 +1,18 @@
 
-class User:
+
+from pydantic import BaseModel
+
+
+class User(BaseModel):
     def __init__(self, username: str,
                  full_name: str,
                  email: str,
-                 hashed_password: str,
                  disabled: bool = False,
                  ) -> None:
 
         self.username = username
         self.full_name = full_name
         self.email = email
-        self.hashed_password = hashed_password
         self.disabled = disabled
 
     def __repr__(self) -> str:
@@ -18,6 +20,18 @@ class User:
         {self.username},
         {self.full_name},
         {self.email},
-        {self.hashed_password},
         {self.disabled}
                 """)
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+
+class UserInDB(User):
+    hashed_password: str

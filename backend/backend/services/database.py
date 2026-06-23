@@ -22,7 +22,6 @@ class DatabaseConnection:
                     username VARCHAR(50) UNIQUE NOT NULL,
                     full_name VARCHAR(100) NOT NULL,
                     email VARCHAR(255) UNIQUE NOT NULL,
-                    hashed_password VARCHAR(255) NOT NULL,
                     disabled BOOLEAN DEFAULT FALSE NOT NULL
                 );
             """)
@@ -47,7 +46,6 @@ class DatabaseConnection:
                 user = User(user_mapping["username"],
                             user_mapping["full_name"],
                             user_mapping["email"],
-                            user_mapping["hashed_password"],
                             user_mapping["disabled"],
                             )
                 return user
@@ -55,11 +53,11 @@ class DatabaseConnection:
             logger.error(f"Error fetching user '{username}': {e}")
             return None
 
-    def add_user(self, username: str, full_name: str, email: str, hashed_password: str, disabled: bool = False) -> bool:
+    def add_user(self, username: str, full_name: str, email: str, disabled: bool = False) -> bool:
         """Create user in DB"""
         stmt = text("""
-            INSERT INTO users (username, full_name, email, hashed_password, disabled) 
-            VALUES (:username, :full_name, :email, :hashed_password, :disabled)
+            INSERT INTO users (username, full_name, email, disabled) 
+            VALUES (:username, :full_name, :email, :disabled)
         """)
         try:
             with Session(self.engine) as session:
@@ -67,7 +65,6 @@ class DatabaseConnection:
                     "username": username,
                     "full_name": full_name,
                     "email": email,
-                    "hashed_password": hashed_password,
                     "disabled": disabled
                 })
                 session.commit()
