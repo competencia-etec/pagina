@@ -28,38 +28,34 @@ class Maze:
     def shift(self, iterations: int = None):
         if not iterations:
             iterations = len(self.grid) * len(self.grid[0]) * 10
-        try:
-            for i in range(iterations):
-                preOriginX = self.originX
-                preOriginY = self.originY
-                newDir = self.r.randint(1, 4)
+        for i in range(iterations):
+            preOriginX = self.originX
+            preOriginY = self.originY
+            newDir = self.r.randint(1, 4)
 
-                match newDir:
-                    case 1:  # Up
-                        if self.originY - 1 < 0:
-                            continue
-                        self.originY -= 1
-                    case 3:  # Down
-                        if self.originY + 1 >= len(self.grid):
-                            continue
-                        self.originY += 1
+            match newDir:
+                case 1:  # Up
+                    if self.originY - 1 < 0:
+                        continue
+                    self.originY -= 1
+                case 3:  # Down
+                    if self.originY + 1 >= len(self.grid):
+                        continue
+                    self.originY += 1
 
-                    case 2:  # Right
-                        if self.originX + 1 >= len(self.grid[0]):
-                            continue
-                        self.originX += 1
-                    case 4:  # Left
-                        if self.originX - 1 < 0:
-                            continue
-                        self.originX -= 1
-                    case _:
-                        print(newDir)
+                case 2:  # Right
+                    if self.originX + 1 >= len(self.grid[0]):
+                        continue
+                    self.originX += 1
+                case 4:  # Left
+                    if self.originX - 1 < 0:
+                        continue
+                    self.originX -= 1
+                case _:
+                    print(newDir)
 
-                self.grid[preOriginY][preOriginX] = newDir
-                self.grid[self.originY][self.originX] = 0
-        except Exception as e:
-            print(preOriginX, preOriginY, newDir, self.originX, self.originY)
-            print(e)
+            self.grid[preOriginY][preOriginX] = newDir
+            self.grid[self.originY][self.originX] = 0
 
     def __str__(self):
         symbols = {
