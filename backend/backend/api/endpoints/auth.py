@@ -11,13 +11,13 @@ from backend.services.user_service import authenticate_user
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
-def add_endpoints(app, fake_users_db):
+def add_endpoints(app):
     @app.post("/token")
     async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     ) -> Token:
         user = authenticate_user(
-            fake_users_db, form_data.username, form_data.password)
+            form_data.username, form_data.password)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
