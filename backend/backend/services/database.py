@@ -29,7 +29,7 @@ class DatabaseConnection:
                 CREATE TABLE IF NOT EXISTS users (
                     id SERIAL PRIMARY KEY,
                     username VARCHAR(50) UNIQUE NOT NULL,
-                    full_name VARCHAR(100) NOT NULL,
+                    full_name VARCHAR(100),
                     email VARCHAR(255) UNIQUE NOT NULL,
                     hashed_password VARCHAR(255) NOT NULL,
                     disabled BOOLEAN DEFAULT FALSE NOT NULL
@@ -65,8 +65,11 @@ class DatabaseConnection:
             logger.error(f"Error fetching user '{username}': {e}")
             return None
 
-    def add_user(self, username: str, full_name: str, email: str, hashed_password: str, disabled: bool = False) -> bool:
+    def add_user(self, username: str, full_name: str | None, email: str, hashed_password: str, disabled: bool = False) -> bool:
         """Create user in DB"""
+
+        full_name = "" if full_name is None else full_name
+
         stmt = text("""
             INSERT INTO users (username, full_name, email, hashed_password, disabled)
             VALUES (:username, :full_name, :email, :hashed_password, :disabled)

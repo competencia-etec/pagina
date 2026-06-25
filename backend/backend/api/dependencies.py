@@ -1,10 +1,6 @@
 from pwdlib import PasswordHash
 
 
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-
-
 password_hash = PasswordHash.recommended()
 
 
@@ -21,6 +17,11 @@ fake_users_db = {
 
 def verify_password(plain_password, hashed_password):
     return password_hash.verify(plain_password, hashed_password)
+
+
+# TODO: Add salting
+def hash_password(plain_password: str):
+    return password_hash.hash(plain_password)
 
 
 def get_password_hash(password):

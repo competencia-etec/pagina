@@ -5,9 +5,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 
-from backend.api.dependencies import verify_password
+from backend.api.dependencies import hash_password, verify_password
 from backend.core.config import EnvirometConfig
-from backend.models.user import TokenData, User
+from backend.models.user import CreateUser, TokenData, User
 from backend.services.database import DatabaseConnection
 
 
@@ -68,3 +68,24 @@ async def get_current_active_user(
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+async def create_user(creating_user: CreateUser) -> User:
+    db = DatabaseConnection()
+
+    hashed_password = hash_password(creating_user.unhashed_password)
+
+    db.add_user(
+        username=creating_user.username,
+        full_name=creating_user.full_name,
+        email=creating_user.email,
+        hashed_password=hashed_password,
+        disabled=creating_user.disabled
+    )
+
+    user = User(
+        **creating_user.model_dump(exclude={"unhashed_password"}),
+        hashed_password=hashed_password
+    )
+
+    return user
