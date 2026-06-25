@@ -1,17 +1,25 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 
 
 class User(BaseModel):
-    username: str
-    full_name: str
-    email: str
+    username: str = Field(..., min_length=3, max_length=50)
+    full_name: str | None = None
+    email: EmailStr
     hashed_password: str
+    disabled: bool = False
+
+
+class CreateUser(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    full_name: str | None = None
+    email: EmailStr
+    unhashed_password: str = Field(..., min_length=8, max_length=128)
     disabled: bool = False
 
 
 class Token(BaseModel):
     access_token: str
-    token_type: str
+    token_type: str = "bearer"
 
 
 class TokenData(BaseModel):
