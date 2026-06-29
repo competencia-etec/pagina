@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from backend.models.user import Token
-from backend.services.oauth_service import create_access_token
+from backend.services.oauth_service import create_access_token, oauth_callback
 from backend.services.user_service import authenticate_user
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -29,3 +29,7 @@ def add_endpoints(app):
             data={"sub": user.username}, expires_delta=access_token_expires
         )
         return Token(access_token=access_token, token_type="bearer")
+
+    @app.get("/callback")
+    async def callback(code: str):
+        return oauth_callback(code)
