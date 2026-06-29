@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from backend.api.dependencies import hash_password, verify_password
 from backend.core import logger
@@ -15,18 +16,28 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 db = DatabaseConnection()
 
 
-def get_user(username: str):
+def get_user_by_username(username: str):
     try:
-        return db.get_user(username)
+        return db.get_user_by_username(username)
     except SQLAlchemyError as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database service unavailable"
+            detail=f"Database service unavailable: {e}"
         )
 
 
-def authenticate_user(username: str, password: str):
-    user = get_user(username)
+def get_user_by_email(email: str):
+    try:
+        return db.get_user_by_email(email)
+    except SQLAlchemyError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database service unavailable: {e}"
+        )
+
+
+def authenticate_user(email: str, password: str):
+    user = get_user_by_email(email)
     if user is None:
         return False
 
@@ -53,12 +64,15 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
             env.get_config_var("SECRET_KEY"),
             algorithms=[env.get_config_var("ALGORITHM")]
         )
-        username: str = payload.get("sub")
-        token_data = TokenData(username=username)
+        email = payload.get("sub")
+        if email is None:
+            raise HTTPException(HTTP_500_INTERNAL_SERVER_ERROR,
+                                "Error getting current user")
+        token_data = TokenData(email=email)
     except jwt.InvalidTokenError:
         raise credentials_exception
 
-    user = get_user(token_data.username)
+    user = get_user_by_email(token_data.email)
     if user is None:
         raise credentials_exception
     return user
