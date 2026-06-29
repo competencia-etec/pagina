@@ -5,11 +5,13 @@ import urllib.parse
 from fastapi import Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from starlette.status import HTTP_400_BAD_REQUEST
 
 from backend.core.config import EnviromentConfig
-from backend.models.user import Token
+from backend.models import oauth_response
+from backend.models.user import CreateUser, Token, User
 from backend.services.oauth_service import create_access_token, oauth_callback
-from backend.services.user_service import authenticate_user
+from backend.services.user_service import authenticate_user, create_user, get_user_by_email
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -48,4 +50,20 @@ def add_endpoints(app):
 
     @app.get("/callback")
     async def callback(code: str):
-        return oauth_callback(code)
+        oauth_user: oauth_response = oauth_callback(code)
+
+        user: User | None = get_user_by_email(oauth_user.email)
+
+        if user is None:
+            # creating_user = CreateUser(
+            #     username=oauth_user.username,
+            #     email=oauth_user.email,
+            #     unhashed_password=None,
+            #
+            # )
+
+            user = await create_user(creating_user)
+
+        tk = create_access_token({"sub": user.email})
+
+        return Token(access_token=tk)
