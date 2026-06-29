@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from backend.api.dependencies import hash_password, verify_password
 from backend.core import logger
-from backend.core.config import EnvirometConfig
+from backend.core.config import EnviromentConfig
 from backend.models.user import CreateUser, TokenData, User
 from backend.services.database import DatabaseConnection
 
@@ -40,7 +40,7 @@ def authenticate_user(username: str, password: str):
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    env = EnvirometConfig()
+    env = EnviromentConfig()
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
