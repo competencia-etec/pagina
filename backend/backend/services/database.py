@@ -35,7 +35,7 @@ class DatabaseConnection:
                 f"Failed to connect or initialize database: {e}")
             raise
 
-    def get_user(self, username: str) -> User | None:
+    def get_user_by_username(self, username: str) -> User | None:
         stmt = text("SELECT * FROM users WHERE username = :username")
         try:
             with Session(self.engine) as session:
@@ -55,7 +55,32 @@ class DatabaseConnection:
             logger.logger.error(f"Error fetching user '{username}': {e}")
             raise
 
-    def add_user(self, username: str, full_name: str | None, email: str, hashed_password: str, disabled: bool = False) -> None:
+    def get_user_by_email(self, email: str) -> User | None:
+        stmt = text("SELECT * FROM users WHERE email = :email")
+        try:
+            with Session(self.engine) as session:
+                result = session.execute(stmt, {"email": email})
+                user_mapping = result.mappings().fetchone()
+                if user_mapping is None:
+                    return None
+
+                return User(
+                    username=user_mapping["username"],
+                    full_name=user_mapping["full_name"],
+                    email=user_mapping["email"],
+                    hashed_password=user_mapping["hashed_password"],
+                    disabled=user_mapping.get("disabled", False),
+                )
+        except SQLAlchemyError as e:
+            logger.logger.error(f"Error fetching user '{email}': {e}")
+            raise
+
+    def add_user(self,
+                 username: str,
+                 full_name: str | None,
+                 email: str,
+                 hashed_password: str,
+                 disabled: bool = False) -> None:
         """Create user in DB. Throws IntegrityError or SQLAlchemyError if it fails."""
         full_name = "" if full_name is None else full_name
 
