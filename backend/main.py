@@ -16,7 +16,7 @@ config.load_env_file()
 db = DatabaseConnection()
 db.init("sqlite+pysqlite:///:memory:", True)
 db.add_user("pepe", "pepardo", "pepe@tumama.com", "fake_password")
-print(db.get_user("pepe"))
+print(db.get_user_by_email("pepe@tumama.com"))
 
 
 add_auth_endpoints(app)
