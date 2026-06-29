@@ -2,11 +2,11 @@ from datetime import timedelta, timezone, datetime
 
 import jwt
 
-from backend.core.config import EnvirometConfig
+from backend.core.config import EnviromentConfig
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    env = EnvirometConfig()
+    env = EnviromentConfig()
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
