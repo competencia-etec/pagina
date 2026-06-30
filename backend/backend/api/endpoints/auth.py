@@ -50,18 +50,19 @@ def add_endpoints(app):
 
     @app.get("/callback")
     async def callback(code: str):
-        oauth_user: oauth_response = oauth_callback(code)
+        oauth_user: oauth_response.GoogleOAuthResponse = oauth_callback(code)
 
         user: User | None = get_user_by_email(oauth_user.email)
 
         if user is None:
-            # creating_user = CreateUser(
-            #     username=oauth_user.username,
-            #     email=oauth_user.email,
-            #     unhashed_password=None,
-            #
-            # )
-
+            creating_user = CreateUser(
+                username=oauth_user.name,
+                full_name=oauth_user.given_name + oauth_user.family_name,
+                email=oauth_user.email,
+                unhashed_password=None,
+                oauth_signed=True,
+                disabled=False
+            )
             user = await create_user(creating_user)
 
         tk = create_access_token({"sub": user.email})

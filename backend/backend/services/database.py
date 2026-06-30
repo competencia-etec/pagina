@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 from backend.core import logger
 from backend.models.user import User
 
@@ -19,11 +19,12 @@ class DatabaseConnection:
             stmt = text("""
                 CREATE TABLE IF NOT EXISTS users (
                     id SERIAL PRIMARY KEY,
-                    username VARCHAR(50) UNIQUE NOT NULL,
+                    username VARCHAR(50) NOT NULL,
                     full_name VARCHAR(100),
                     email VARCHAR(255) UNIQUE NOT NULL,
-                    hashed_password VARCHAR(255) NOT NULL,
-                    disabled BOOLEAN DEFAULT FALSE NOT NULL
+                    hashed_password VARCHAR(255),
+                    disabled BOOLEAN DEFAULT FALSE NOT NULL,
+                    oauth_signed BOOLEAN DEFAULT FALSE NOT NULL
                 );
             """)
             with Session(self.engine) as session:
@@ -79,14 +80,16 @@ class DatabaseConnection:
                  username: str,
                  full_name: str | None,
                  email: str,
-                 hashed_password: str,
-                 disabled: bool = False) -> None:
+                 hashed_password: str | None,
+                 disabled: bool = False,
+                 oauth_signed: bool = False
+                 ) -> None:
         """Create user in DB. Throws IntegrityError or SQLAlchemyError if it fails."""
         full_name = "" if full_name is None else full_name
 
         stmt = text("""
-            INSERT INTO users (username, full_name, email, hashed_password, disabled)
-            VALUES (:username, :full_name, :email, :hashed_password, :disabled)
+            INSERT INTO users (username, full_name, email, hashed_password, disabled, oauth_signed)
+            VALUES (:username, :full_name, :email, :hashed_password, :disabled, :oauth_signed)
         """)
 
         with Session(self.engine) as session:
@@ -95,7 +98,8 @@ class DatabaseConnection:
                 "full_name": full_name,
                 "email": email,
                 "hashed_password": hashed_password,
-                "disabled": disabled
+                "disabled": disabled,
+                "oauth_signed": oauth_signed
             })
             session.commit()
 
@@ -129,13 +133,3 @@ class DatabaseConnection:
         """Gracefully dispose of the connection pool."""
         self.engine.dispose()
         logger.logger.info("Database connection closed.")
-
-
-if __name__ == "__main__":
-    # Testing
-    db = DatabaseConnection()
-    db.init("sqlite+pysqlite:///:memory:", False)
-
-    db.add_user("pepe", "pepardo", "pepe@tumama.com", "&#(*$&df")
-    print(db.get_user("pepe"))
-    db.close()
