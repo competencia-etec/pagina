@@ -5,7 +5,6 @@ import urllib.parse
 from fastapi import Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from starlette.status import HTTP_400_BAD_REQUEST
 
 from backend.core.config import EnviromentConfig
 from backend.models import oauth_response
@@ -16,11 +15,12 @@ from backend.services.user_service import authenticate_user, create_user, get_us
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
-def add_endpoints(app):
-    @app.post("/login_credentials")
+def add_endpoints(router):
+    @router.post("/login_local", tags=["auth"])
     async def loging_with_credentials(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     ) -> Token:
+        """Loging local form"""
         user = authenticate_user(
             form_data.username, form_data.password)
         if not user:
@@ -35,8 +35,9 @@ def add_endpoints(app):
         )
         return Token(access_token=access_token, token_type="bearer")
 
-    @app.get("/login_oauth")
+    @router.get("/login_oauth", tags=["auth"])
     async def login_with_oauth():
+        """Loging auth endpoint"""
         params = {
             "client_id": EnviromentConfig().get_config_var("OAUTH_CLIENT_ID"),
             "redirect_uri": EnviromentConfig().get_config_var("OAUTH_REDIRECT_URI"),
@@ -48,8 +49,9 @@ def add_endpoints(app):
             urllib.parse.urlencode(params)}"
         return RedirectResponse(auth_url)
 
-    @app.get("/callback")
+    @router.get("/oauth_callback", tags=["auth"])
     async def callback(code: str):
+        """Callback for oauth loggin"""
         oauth_user: oauth_response.GoogleOAuthResponse = oauth_callback(code)
 
         user: User | None = get_user_by_email(oauth_user.email)
