@@ -2,6 +2,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import jwt
+from sqlalchemy.engine import create
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
@@ -42,7 +43,7 @@ def authenticate_user(email: str, password: str):
         return False
 
     # HACK: Remove false password
-    if password == "fake_password":
+    if password == "secret":
         return user
 
     if not verify_password(password, user.hashed_password):
@@ -88,6 +89,17 @@ async def get_current_active_user(
 
 
 async def create_user(creating_user: CreateUser) -> User:
+    # TODO: Reimplement this shi
+    if creating_user.oauth_signed:
+        return await create_oauth_user(creating_user)
+    return await create_local_user(creating_user)
+
+
+async def create_local_user(creating_user: CreateUser) -> User:
+    """Creates user with default logging method, password required"""
+
+    assert creating_user.unhashed_password, "Password must be a valid string"
+
     hashed_password = hash_password(creating_user.unhashed_password)
 
     try:
@@ -96,8 +108,46 @@ async def create_user(creating_user: CreateUser) -> User:
             full_name=creating_user.full_name,
             email=creating_user.email,
             hashed_password=hashed_password,
-            disabled=creating_user.disabled
+            disabled=creating_user.disabled,
+            oauth_signed=False
         )
+
+    except IntegrityError as e:
+        logger.logger.error(f"Integrity error (Duplicate User/Email): {e}")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User or email already exists",
+        )
+    except SQLAlchemyError as e:
+        logger.logger.error(f"SQL ERROR: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error processing the response",
+        )
+
+    return User(
+        **creating_user.model_dump(exclude={"unhashed_password"}),
+        hashed_password=hashed_password
+    )
+
+
+async def create_oauth_user(creating_user: CreateUser) -> User:
+    """Creates user with oauth, must not specify password"""
+
+    assert creating_user.oauth_signed
+
+    hashed_password = None
+
+    try:
+        db.add_user(
+            username=creating_user.username,
+            full_name=creating_user.full_name,
+            email=creating_user.email,
+            hashed_password=hashed_password,
+            disabled=creating_user.disabled,
+            oauth_signed=True
+        )
+
     except IntegrityError as e:
         logger.logger.error(f"Integrity error (Duplicate User/Email): {e}")
         raise HTTPException(

@@ -24,7 +24,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-def oauth_callback(code: str) -> str:
+def oauth_callback(code: str) -> GoogleOAuthResponse:
     """Handle Oauth return code"""
 
     token_url = "https://oauth2.googleapis.com/token"
