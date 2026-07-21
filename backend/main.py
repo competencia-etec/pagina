@@ -15,9 +15,8 @@ config.load_env_file()
 
 # Testing
 db = DatabaseConnection()
-db.init("sqlite+pysqlite:///:memory:", True)
-db.add_user("pepe", "pepardo", "pepe@tumama.com", "secret")
-print(db.get_user_by_email("pepe@tumama.com"))
+# db.init("sqlite+pysqlite:///:memory:", True)
+db.init("sqlite:///foo.db", True)
 
 
 add_auth_endpoints(router)
