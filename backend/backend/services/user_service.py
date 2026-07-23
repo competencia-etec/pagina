@@ -11,7 +11,7 @@ from backend.core.config import EnviromentConfig
 from backend.models.user import CreateUser, TokenData, User
 from backend.services.database import DatabaseConnection
 
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="oauth_callback")
 db = DatabaseConnection()
 
 
@@ -35,8 +35,7 @@ def get_user_by_email(email: str):
         )
 
 
-# FIX: Hey buddy, authentication token shouldn't be on http urls
-async def get_current_user(token: str):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     env = EnviromentConfig()
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -59,8 +58,10 @@ async def get_current_user(token: str):
         raise credentials_exception
 
     user = get_user_by_email(token_data.email)
+
     if user is None:
         raise credentials_exception
+
     return user
 
 

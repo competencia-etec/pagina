@@ -1,8 +1,9 @@
 from typing import Annotated
 from fastapi import Depends, APIRouter
 
-from backend.models.user import CreateUser, User
-from backend.services.user_service import get_current_active_user, create_user as service_create_user
+from backend.models.user import User
+from backend.services.user_service import get_current_active_user
+
 
 router = APIRouter()
 
