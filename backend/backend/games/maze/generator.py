@@ -76,8 +76,8 @@ class Maze:
 
         # Binary shenanigans abstraction
         def removeCellWall(cellX: int, cellY: int, direction: int):
-            oldValue = self.walls[cellY][cellX]
             assert direction >= 1 and direction <= 4
+            oldValue = self.walls[cellY][cellX]
 
             mask = 1 << (direction - 1)  # e.g. 0010
             mask = ~mask  # now 1101
@@ -104,10 +104,10 @@ class Maze:
                     case 4:
                         cellXB -= 1
 
-                direction = ((direction + 1) % 4) + 1
-
                 assert 0 <= cellXB < self.h
                 assert 0 <= cellYB < self.w
+
+                direction = ((direction + 1) % 4) + 1
 
                 removeCellWall(cellXB, cellYB, direction)
 
