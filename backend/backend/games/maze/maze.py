@@ -4,10 +4,9 @@ from generator import Maze
 class GameData:
     def __init__(self):
         self.m = Maze(15, 15, 5)
-        self.playerX, self.playerY = self._find_longest_path()
+        self.playerX, self.playerY = self._findLongestPath()
 
-
-    def _trace_path(self, x, y):
+    def _tracePath(self, x, y):
         assert 0 <= y < self.m.h
         assert 0 <= x < self.m.w
 
@@ -29,7 +28,7 @@ class GameData:
             steps += 1
             assert steps <= self.m.w * self.m.h
 
-    def _is_dead_end(self, x, y):
+    def _isDeadEnd(self, x, y):
         assert 0 <= y < self.m.h
         assert 0 <= x < self.m.w
 
@@ -37,32 +36,44 @@ class GameData:
             return True
         return False
 
-    def _find_longest_path(self):
+    def _findLongestPath(self):
         # We find the longest path by first generating a list of every dead end
         # in the maze, and then, for every one, follow the path they take to get
         # to the origin, and count the amount of steps to get there.
         # Finally, we return the coordinates of the node that's furthest from
         # the origin in terms of steps.
 
-        starting_cells = []
+        startingCells = []
 
         for x in range(self.m.w):
             for y in range(self.m.h):
-                if self._is_dead_end(x, y):
-                    starting_cells.append((x, y))
+                if self._isDeadEnd(x, y):
+                    startingCells.append((x, y))
 
-        longest_path = -1
-        best_cell = None
+        longestPath = -1
+        bestCell = None
 
-        for cell in starting_cells:
-            path_length = self._trace_path(cell[0], cell[1])
-            if path_length > longest_path:
-                longest_path = path_length
-                best_cell = cell
+        for cell in startingCells:
+            pathLength = self._tracePath(cell[0], cell[1])
+            if pathLength > longestPath:
+                longestPath = pathLength
+                bestCell = cell
 
-        return best_cell
+        return bestCell
+
+    def _getCellWall(self, cellX: int, cellY: int, direction: int):
+        assert direction >= 1 and direction <= 4
+        wallsValue = self.walls[cellY][cellX]
+
+        mask = 1 << (direction - 1)  # e.g. 0010
+        return bool(wallsValue & mask)
+
+    def movePlayer(self, direction: int):
+        assert direction >= 1 and direction <= 4
+        if self._getCellWall(self.playerX, self.playerY, direction):
+            return False
 
 
-def start_game():
+def startGame():
     gd = GameData()
     return gd
