@@ -6,13 +6,11 @@ from sqlalchemy.engine import create
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
-from backend.api.dependencies import hash_password, verify_password
 from backend.core import logger
 from backend.core.config import EnviromentConfig
 from backend.models.user import CreateUser, TokenData, User
 from backend.services.database import DatabaseConnection
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 db = DatabaseConnection()
 
@@ -37,21 +35,8 @@ def get_user_by_email(email: str):
         )
 
 
-def authenticate_user(email: str, password: str):
-    user = get_user_by_email(email)
-    if user is None:
-        return False
-
-    # HACK: Remove false password
-    if password == "secret":
-        return user
-
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
-
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+# FIX: Hey buddy, authentication token shouldn't be on http urls
+async def get_current_user(token: str):
     env = EnviromentConfig()
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -89,63 +74,18 @@ async def get_current_active_user(
 
 
 async def create_user(creating_user: CreateUser) -> User:
-    # TODO: Reimplement this shi
-    if creating_user.oauth_signed:
-        return await create_oauth_user(creating_user)
-    return await create_local_user(creating_user)
-
-
-async def create_local_user(creating_user: CreateUser) -> User:
-    """Creates user with default logging method, password required"""
-
-    assert creating_user.unhashed_password, "Password must be a valid string"
-
-    hashed_password = hash_password(creating_user.unhashed_password)
-
-    try:
-        db.add_user(
-            username=creating_user.username,
-            full_name=creating_user.full_name,
-            email=creating_user.email,
-            hashed_password=hashed_password,
-            disabled=creating_user.disabled,
-            oauth_signed=False
-        )
-
-    except IntegrityError as e:
-        logger.logger.error(f"Integrity error (Duplicate User/Email): {e}")
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User or email already exists",
-        )
-    except SQLAlchemyError as e:
-        logger.logger.error(f"SQL ERROR: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error processing the response",
-        )
-
-    return User(
-        **creating_user.model_dump(exclude={"unhashed_password"}),
-        hashed_password=hashed_password
-    )
+    return await create_oauth_user(creating_user)
 
 
 async def create_oauth_user(creating_user: CreateUser) -> User:
     """Creates user with oauth, must not specify password"""
 
-    assert creating_user.oauth_signed
-
-    hashed_password = None
-
     try:
         db.add_user(
             username=creating_user.username,
             full_name=creating_user.full_name,
             email=creating_user.email,
-            hashed_password=hashed_password,
             disabled=creating_user.disabled,
-            oauth_signed=True
         )
 
     except IntegrityError as e:
@@ -162,6 +102,5 @@ async def create_oauth_user(creating_user: CreateUser) -> User:
         )
 
     return User(
-        **creating_user.model_dump(exclude={"unhashed_password"}),
-        hashed_password=hashed_password
+        **creating_user.model_dump(),
     )
