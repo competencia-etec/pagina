@@ -22,9 +22,7 @@ class DatabaseConnection:
                     username VARCHAR(50) NOT NULL,
                     full_name VARCHAR(100),
                     email VARCHAR(255) UNIQUE NOT NULL,
-                    hashed_password VARCHAR(255),
-                    disabled BOOLEAN DEFAULT FALSE NOT NULL,
-                    oauth_signed BOOLEAN DEFAULT FALSE NOT NULL
+                    disabled BOOLEAN DEFAULT FALSE NOT NULL
                 );
             """)
             with Session(self.engine) as session:
@@ -49,7 +47,6 @@ class DatabaseConnection:
                     username=user_mapping["username"],
                     full_name=user_mapping["full_name"],
                     email=user_mapping["email"],
-                    hashed_password=user_mapping["hashed_password"],
                     disabled=user_mapping.get("disabled", False),
                 )
         except SQLAlchemyError as e:
@@ -69,7 +66,6 @@ class DatabaseConnection:
                     username=user_mapping["username"],
                     full_name=user_mapping["full_name"],
                     email=user_mapping["email"],
-                    hashed_password=user_mapping["hashed_password"],
                     disabled=user_mapping.get("disabled", False),
                 )
         except SQLAlchemyError as e:
@@ -80,16 +76,14 @@ class DatabaseConnection:
                  username: str,
                  full_name: str | None,
                  email: str,
-                 hashed_password: str | None,
                  disabled: bool = False,
-                 oauth_signed: bool = False
                  ) -> None:
         """Create user in DB. Throws IntegrityError or SQLAlchemyError if it fails."""
         full_name = "" if full_name is None else full_name
 
         stmt = text("""
-            INSERT INTO users (username, full_name, email, hashed_password, disabled, oauth_signed)
-            VALUES (:username, :full_name, :email, :hashed_password, :disabled, :oauth_signed)
+            INSERT INTO users (username, full_name, email, disabled)
+            VALUES (:username, :full_name, :email, :disabled)
         """)
 
         with Session(self.engine) as session:
@@ -97,9 +91,7 @@ class DatabaseConnection:
                 "username": username,
                 "full_name": full_name,
                 "email": email,
-                "hashed_password": hashed_password,
                 "disabled": disabled,
-                "oauth_signed": oauth_signed
             })
             session.commit()
 

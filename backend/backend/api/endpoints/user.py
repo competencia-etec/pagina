@@ -14,8 +14,3 @@ def add_endpoints(router):
     ) -> User:
         """Validate current logging user"""
         return current_user
-
-    @router.post("/users/new/", tags=["user"])
-    async def web_create_user(user: CreateUser) -> User:
-        """Local user create"""
-        return await service_create_user(user)
