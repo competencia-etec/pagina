@@ -1,13 +1,14 @@
 from pathlib import Path
 from datetime import date
 
-ANSW_FILE = Path("valid-answers.txt")
-DICT_FILE = Path("dictionary.txt")
+MODULE_PATH = Path(__file__).parent
+ANSW_FILE = MODULE_PATH / Path("valid-answers.txt")
+DICT_FILE = MODULE_PATH / Path("dictionary.txt")
 INIT_DATE = date(2026, 7, 1)
 
 
 def replace_char(string: str, char: str, idx: int):
-    return string[:idx] + char + string[1 + idx :]
+    return string[:idx] + char + string[1 + idx:]
 
 
 class GameData:
@@ -17,6 +18,14 @@ class GameData:
         self.contains = ""  # Yellow letters (in no particular order)
         self.partial = "?????"  # Green letters (each in its own position)
         self.player_won = False
+
+    def __str__(self):
+        return (f"Game Status:\n"
+                f"  Answer: {self.answer}\n"
+                f"  Guesses left: {self.guesses}\n"
+                f"  Contains (Yellow): '{self.contains}'\n"
+                f"  Partial (Green): {self.partial}\n"
+                f"  Player Won: {self.player_won}")
 
 
 #    def __str__(self):
@@ -29,7 +38,8 @@ class GameData:
 #    """
 
 
-def start_game():
+# FIX: Reading the whole file EVERY TIME we create a session
+def start_game() -> GameData | None:
     word_idx = (date.today() - INIT_DATE).days
     gd = None
 
@@ -59,7 +69,8 @@ def check_guess(gd: GameData, guess: str):
     return gd
 
 
-def is_valid_guess(guess: str):
+# FIX: Reading the whole file EVERY TIME we check answers
+def is_valid_guess(guess: str) -> bool:
     if len(guess) != 5:
         return False
 
