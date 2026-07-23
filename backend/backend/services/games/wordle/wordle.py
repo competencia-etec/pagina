@@ -1,22 +1,23 @@
 from pathlib import Path
 from datetime import date
 
-ANSW_FILE = Path('valid-answers.txt')
-DICT_FILE = Path('dictionary.txt')
+ANSW_FILE = Path("valid-answers.txt")
+DICT_FILE = Path("dictionary.txt")
 INIT_DATE = date(2026, 7, 1)
 
 
 def replace_char(string: str, char: str, idx: int):
-    return string[:idx] + char + string[1 + idx:]
+    return string[:idx] + char + string[1 + idx :]
 
 
 class GameData:
     def __init__(self, answer):
-        self.answer = answer    # The actual answer (set in the code block below)
-        self.guesses = 6        # Amount of guesses the user has left
-        self.contains = ''      # Yellow letters (in no particular order)
-        self.partial = '?????'  # Green letters (each in its own position)
+        self.answer = answer  # The actual answer (set in the code block below)
+        self.guesses = 6  # Amount of guesses the user has left
+        self.contains = ""  # Yellow letters (in no particular order)
+        self.partial = "?????"  # Green letters (each in its own position)
         self.player_won = False
+
 
 #    def __str__(self):
 #        return f"""
@@ -32,7 +33,7 @@ def start_game():
     word_idx = (date.today() - INIT_DATE).days
     gd = None
 
-    with ANSW_FILE.open('r') as answfile:
+    with ANSW_FILE.open("r") as answfile:
         for idx, word in enumerate(answfile):
             if idx == word_idx:
                 gd = GameData(word.strip())
@@ -62,7 +63,7 @@ def is_valid_guess(guess: str):
     if len(guess) != 5:
         return False
 
-    with DICT_FILE.open('r') as dfile:
+    with DICT_FILE.open("r") as dfile:
         for word in dfile:
             if word.strip() == guess:
                 return True
