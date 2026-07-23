@@ -73,6 +73,16 @@ class GameData:
         if self._getCellWall(self.playerX, self.playerY, direction):
             return False
 
+        match direction:
+            case 1:  # Move up
+                self.playerY -= 1
+            case 2:  # Right
+                self.playerX += 1
+            case 3:  # Down
+                self.playerY += 1
+            case 4:  # Left
+                self.playerX -= 1
+
 
 def startGame():
     gd = GameData()
