@@ -1,7 +1,8 @@
 
 from fastapi import APIRouter, HTTPException
 
-from backend.models.wordle import WordleInitResponse
+from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess
+from backend.services.games.wordle.wordle import check_guess
 from backend.services.games.wordle.wordle_session_system import WordleSessionSystem
 
 
@@ -13,7 +14,7 @@ def add_endpoints(router):
     async def wordle_start_game(
         # HACK: removing authentication user for debug
         # current_user: Annotated[User, Depends(get_current_active_user)],
-    ) -> WordleInitResponse:
+    ) -> InitResponse:
         """Create wordle session"""
 
         sd = WordleSessionSystem()
@@ -28,3 +29,15 @@ def add_endpoints(router):
         return WordleInitResponse(session_id=str(session.uuid),
                                   word_length=len(session.game_data.answer),
                                   max_attempts=session.game_data.guesses)
+
+    @router.post("/wordle/guess/", tags=["wordle"])
+    async def wordle_guess_game(
+        player_guess: PlayerGuess,
+        # HACK: removing authentication user for debug
+        # current_user: Annotated[User, Depends(get_current_active_user)],
+    ) -> GuessResponse:
+        """Create wordle session"""
+
+        ss = WordleSessionSystem()
+
+        return GuessResponse
