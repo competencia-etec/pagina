@@ -33,20 +33,13 @@ class PlayerGuess(BaseModel):
     guess: str
 
 
-class CharGuessHint(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True, frozen=True)
-
-    letter: Annotated[
-        str,
-        StringConstraints(min_length=1, max_length=1, pattern=r'^[A-Za-z]$')
-    ]
-    status: Literal['correct_position', 'wrong_position', 'absent']
-
-
 class GuessResponse(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
 
     game_status: Literal['in_progress', 'won', 'lost']
 
-    hints: List[CharGuessHint]
+    hints: List[Annotated[str, StringConstraints(min_length=1, max_length=1)]]
+
+    partial_word: str
+
     attempts_remaining: int

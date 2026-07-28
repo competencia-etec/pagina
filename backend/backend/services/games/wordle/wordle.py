@@ -51,14 +51,14 @@ def start_game() -> GameData | None:
     return gd
 
 
-def check_guess(gd: GameData, guess: str):
+def check_guess(gd: GameData, guess: str) -> GameData:
     assert is_valid_guess(guess)
 
     gd.guesses -= 1
 
     if gd.answer == guess:
         gd.player_won = True
-        return
+        return gd
 
     for idx in range(5):
         if gd.answer[idx] == guess[idx]:
