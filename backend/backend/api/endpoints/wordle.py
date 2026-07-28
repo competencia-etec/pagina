@@ -7,7 +7,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_406_NOT_ACCEPTABLE
 from backend.models.user import User
 from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess
 from backend.services.games.wordle.wordle import GameData
-from backend.services.games.wordle.wordle_exeptions import InvalidUUID, InvalidWord
+from backend.services.games.wordle.wordle_exeptions import InvalidSession, InvalidWord
 from backend.services.games.wordle.wordle_session_system import WordleSessionSystem
 from backend.services.user_service import get_current_active_user
 
@@ -29,9 +29,7 @@ def add_endpoints(router):
         if session is None:
             raise HTTPException(status_code=501, detail="Internal Error")
 
-        sd.debug_print_sessions()
-
-        return InitResponse(session_uuid=str(session.uuid),
+        return InitResponse(session_email=current_user.email,
                             word_length=len(session.game_data.answer),
                             max_attempts=session.game_data.guesses)
 
@@ -45,18 +43,13 @@ def add_endpoints(router):
         ss = WordleSessionSystem()
 
         try:
-            gd: GameData = ss.get_session(player_guess.session_uuid)
+            gd: GameData = ss.get_session(current_user.email)
 
-            if not ss.is_users_session(player_guess.session_uuid, current_user.email):
-                raise HTTPException(HTTP_401_UNAUTHORIZED,
-                                    "User session mismatch")
+            gd = ss.validate_word(current_user.email, player_guess.guess)
 
-            gd = ss.validate_word(
-                player_guess.session_uuid, player_guess.guess)
-
-        except InvalidUUID as e:
+        except InvalidSession as e:
             raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
-                                f"Invalid UUID  {e.session_uuid}")
+                                f"Invalid session for: {e.session_email}")
         except InvalidWord as e:
             raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
                                 detail=f"Invalid guess {e.guess}")
@@ -65,6 +58,7 @@ def add_endpoints(router):
                            partial_word=gd.partial,
                            hints=list(gd.contains),
                            attempts_remaining=gd.guesses,
+                           prev_attempts=gd.prev_guesses
                            )
 
         return gs

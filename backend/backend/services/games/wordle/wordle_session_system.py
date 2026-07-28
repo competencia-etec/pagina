@@ -2,26 +2,21 @@ import uuid
 from dataclasses import dataclass
 from typing import Optional
 
+from fastapi import HTTPException
+from starlette.status import HTTP_406_NOT_ACCEPTABLE
+
 from backend.services.games.wordle.wordle import GameData, check_guess, is_valid_guess, start_game
-from backend.services.games.wordle.wordle_exeptions import GameCreationError, InvalidUUID, InvalidWord
+from backend.services.games.wordle.wordle_exeptions import GameCreationError, InvalidSession, InvalidWord
 
 
 @dataclass
 class SessionEntry:
     game_data: GameData
-    user_email: str
-
-
-@dataclass
-class SessionData:
-    game_data: GameData
-    uuid: uuid.UUID
-    user_email: str
 
 
 class WordleSessionSystem:
     _instance = None
-    _sessions: dict[uuid.UUID, SessionEntry]
+    _sessions: dict[str, SessionEntry]
 
     def __new__(cls):
         if cls._instance is None:
@@ -29,55 +24,57 @@ class WordleSessionSystem:
             cls._sessions = {}
         return cls._instance
 
-    def new_session(self, user_email: str) -> SessionData:
+    def new_session(self, user_email: str) -> SessionEntry:
         """Creates new wordle game session, may raise GameCreationError"""
 
         assert (self._instance)
-        new_uuid = uuid.uuid4()
+
         new_game_data = start_game()
 
         if new_game_data is None:
             raise GameCreationError("Failed to initialize a new Wordle game.")
 
-        self._sessions[new_uuid] = SessionEntry(new_game_data, user_email)
+        if self._sessions.get(user_email) is not None:
+            raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
+                                detail="Session already created for this user")
+        self._sessions[user_email] = SessionEntry(new_game_data)
 
-        return SessionData(
-            uuid=new_uuid,
+        return SessionEntry(
             game_data=new_game_data,
-            user_email=user_email
         )
 
-    def finish_session(self, session_uuid: uuid.UUID) -> None:
+    def finish_session(self, user_email: str) -> None:
         """Terminates the wordle session"""
 
         assert (self._instance)
-        self._sessions.pop(session_uuid, None)
 
-    def get_session(self, session_uuid: str) -> GameData:
-        """Returns Game data for the provided session_uuid, may raise InvalidUUID"""
+        self._sessions.pop(user_email, None)
+
+    def get_session(self, user_email: str) -> GameData:
+        """Returns Game data for the provided user email, may raise InvalidSession"""
 
         assert (self._instance)
 
-        se = self._sessions.get(uuid.UUID(session_uuid))
+        se = self._sessions.get(user_email)
 
         if se is None:
-            raise InvalidUUID(session_uuid)
+            raise InvalidSession(user_email)
 
         return se.game_data
 
-    def validate_word(self, session_uuid: str, guess: str) -> GameData:
-        """Validated user's guess, may raise InvalidUUID or Invalid Word"""
+    def validate_word(self, session_email: str, guess: str) -> GameData:
+        """Validated user's guess, may raise InvalidSession or Invalid Word"""
 
         assert (self._instance)
 
         if not is_valid_guess(guess):
             raise InvalidWord(f"'{guess}' is not in the valid word list.")
 
-        gd = self.get_session(session_uuid)
+        gd = self.get_session(session_email)
 
         if gd is None:
-            raise InvalidUUID(
-                f"No active session found for UUID: {session_uuid}")
+            raise InvalidSession(
+                f"No active session found for user: {session_email}")
 
         gd = check_guess(gd, guess)
 
@@ -91,18 +88,11 @@ class WordleSessionSystem:
         assert (self._instance)
         self._sessions.clear()
 
-    def is_users_session(self, session_uuid: str, user_email: str) -> bool:
-        se = self._sessions.get(uuid.UUID(session_uuid))
-        if se is None:
-            raise InvalidUUID(session_uuid)
-
-        return se.user_email == user_email
-
     def debug_print_sessions(self) -> None:
         """DEBUG, prints all sessions"""
 
         assert (self._instance)
         for key, value in self._sessions.items():
-            print(f"UUID: {str(key)} \t {value}\n Prev Guesses:\n")
+            print(f"Email: {str(key)} \t {value}\n Prev Guesses:\n")
             for val in value.game_data.prev_guesses:
                 print(val)

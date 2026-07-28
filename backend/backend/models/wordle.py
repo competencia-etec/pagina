@@ -16,7 +16,7 @@ def normalize_guess(v: str) -> str:
 class InitResponse(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
 
-    session_uuid: str
+    session_email: str
 
     word_length: int
 
@@ -25,8 +25,6 @@ class InitResponse(BaseModel):
 
 class PlayerGuess(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
-
-    session_uuid: str
 
     guess: str
 
@@ -41,3 +39,5 @@ class GuessResponse(BaseModel):
     partial_word: str
 
     attempts_remaining: int
+
+    prev_attempts: List[str]
