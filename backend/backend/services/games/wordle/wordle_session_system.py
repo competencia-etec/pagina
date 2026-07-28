@@ -73,7 +73,11 @@ class WordleSessionSystem:
             raise InvalidUUID(
                 f"No active session found for UUID: {session_uuid}")
 
-        return check_guess(gd, guess)
+        gd = check_guess(gd, guess)
+
+        gd.prev_guesses.append(guess)
+
+        return gd
 
     def clear(self) -> None:
         """Clears all sessions"""
@@ -86,4 +90,6 @@ class WordleSessionSystem:
 
         assert (self._instance)
         for key, value in self._sessions.items():
-            print(f"UUID: {str(key)} \t {value}")
+            print(f"UUID: {str(key)} \t {value}\n Prev Guesses:\n")
+            for val in value.prev_guesses:
+                print(val)

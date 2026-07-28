@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import date
+from typing import List
 
 MODULE_PATH = Path(__file__).parent
 ANSW_FILE = MODULE_PATH / Path("valid-answers.txt")
@@ -18,6 +19,8 @@ class GameData:
         self.contains = ""  # Yellow letters (in no particular order)
         self.partial = "?????"  # Green letters (each in its own position)
         self.player_won = False
+
+        self.prev_guesses: List[str] = []
 
     def __str__(self):
         return (f"Game Status:\n"
@@ -60,7 +63,7 @@ def check_guess(gd: GameData, guess: str) -> GameData:
         gd.player_won = True
         return gd
 
-    for idx in range(5):
+    for idx in range(len(gd.answer)):
         if gd.answer[idx] == guess[idx]:
             gd.partial = replace_char(gd.partial, gd.answer[idx], idx)
         if guess[idx] in gd.answer and not (guess[idx] in gd.contains):
