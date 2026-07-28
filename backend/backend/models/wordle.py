@@ -41,3 +41,14 @@ class GuessResponse(BaseModel):
     attempts_remaining: int
 
     prev_attempts: List[str]
+
+
+class SessionResponse(BaseModel):
+
+    hints: List[Annotated[str, StringConstraints(min_length=1, max_length=1)]]
+
+    partial_word: str
+
+    attempts_remaining: int
+
+    prev_attempts: List[str]
