@@ -6,13 +6,13 @@ class WordleSessionError(Exception):
     pass
 
 
-class InvalidUUID(WordleSessionError):
-    """Raised when a requested session UUID does not exist."""
+class InvalidSession(WordleSessionError):
+    """Raised when a requested session does not exist."""
 
-    def __init__(self, session_uuid: uuid.UUID, message: str | None = None):
-        self.session_uuid = session_uuid
-        self.message = message or f"No active session found for UUID: {
-            session_uuid}"
+    def __init__(self, session_email: str, message: str | None = None):
+        self.session_email = session_email
+        self.message = message or f"No active session found for user: {
+            session_email}"
         super().__init__(self.message)
 
 
