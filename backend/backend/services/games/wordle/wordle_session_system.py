@@ -1,6 +1,4 @@
-import uuid
 from dataclasses import dataclass
-from typing import Optional
 
 from fastapi import HTTPException
 from starlette.status import HTTP_406_NOT_ACCEPTABLE

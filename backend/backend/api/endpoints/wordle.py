@@ -1,8 +1,8 @@
 
-from typing import Annotated, List
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_406_NOT_ACCEPTABLE
+from starlette.status import HTTP_406_NOT_ACCEPTABLE
 
 from backend.models.user import User
 from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess, SessionResponse
