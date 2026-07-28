@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordBearer
 import jwt
 from sqlalchemy.engine import create
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -11,7 +11,8 @@ from backend.core.config import EnviromentConfig
 from backend.models.user import CreateUser, TokenData, User
 from backend.services.database import DatabaseConnection
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="oauth_callback")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="oauth_callback")
+security = HTTPBearer()
 db = DatabaseConnection()
 
 
@@ -35,7 +36,7 @@ def get_user_by_email(email: str):
         )
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)):
     env = EnviromentConfig()
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -45,7 +46,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
     try:
         payload = jwt.decode(
-            token,
+            token.credentials,
             env.get_config_var("SECRET_KEY"),
             algorithms=[env.get_config_var("ALGORITHM")]
         )
