@@ -28,7 +28,7 @@ def add_endpoints(router):
 
         sd.debug_print_sessions()
 
-        return InitResponse(session_id=session.uuid,
+        return InitResponse(session_uuid=str(session.uuid),
                             word_length=len(session.game_data.answer),
                             max_attempts=session.game_data.guesses)
 
@@ -43,10 +43,10 @@ def add_endpoints(router):
         ss = WordleSessionSystem()
 
         try:
-            gd: GameData = ss.get_session(player_guess.session_id)
+            gd: GameData = ss.get_session(player_guess.session_uuid)
 
             gd = ss.validate_word(
-                player_guess.session_id, player_guess.guess)
+                player_guess.session_uuid, player_guess.guess)
 
         except InvalidUUID as e:
             raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
@@ -57,7 +57,7 @@ def add_endpoints(router):
 
         gs = GuessResponse(game_status='won' if gd.player_won else 'lost' if gd.guesses == 0 else 'in_progress',
                            partial_word=gd.partial,
-                           hints=gd.contains.split(''),
+                           hints=list(gd.contains),
                            attempts_remaining=gd.guesses,
                            )
 

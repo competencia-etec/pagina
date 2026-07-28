@@ -7,18 +7,16 @@ from pydantic import (
     StringConstraints,
 )
 
-import uuid
-
 
 def normalize_guess(v: str) -> str:
-    """Normalize the guess to uppercase for consistent backend processing."""
+    """Normalize the guess to uppercase."""
     return v.upper()
 
 
 class InitResponse(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
 
-    session_id: uuid.UUID
+    session_uuid: str
 
     word_length: int
 
@@ -28,7 +26,7 @@ class InitResponse(BaseModel):
 class PlayerGuess(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
 
-    session_id: uuid.UUID
+    session_uuid: str
 
     guess: str
 

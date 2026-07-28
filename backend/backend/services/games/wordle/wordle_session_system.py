@@ -47,19 +47,19 @@ class WordleSessionSystem:
         assert (self._instance)
         self._sessions.pop(session_uuid, None)
 
-    def get_session(self, session_uuid: uuid.UUID) -> GameData:
+    def get_session(self, session_uuid: str) -> GameData:
         """Returns Game data for the provided session_uuid, may raise InvalidUUID"""
 
         assert (self._instance)
 
-        gd = self._sessions.get(session_uuid)
+        gd = self._sessions.get(uuid.UUID(session_uuid))
 
         if gd is None:
             raise InvalidUUID(session_uuid)
 
         return gd
 
-    def validate_word(self, session_uuid: uuid.UUID, guess: str) -> GameData:
+    def validate_word(self, session_uuid: str, guess: str) -> GameData:
         """Validated user's guess, may raise InvalidUUID or Invalid Word"""
 
         assert (self._instance)
