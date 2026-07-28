@@ -1,8 +1,10 @@
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
+from starlette.status import HTTP_406_NOT_ACCEPTABLE
 
 from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess
-from backend.services.games.wordle.wordle import check_guess
+from backend.services.games.wordle.wordle import GameData
+from backend.services.games.wordle.wordle_exeptions import InvalidUUID, InvalidWord
 from backend.services.games.wordle.wordle_session_system import WordleSessionSystem
 
 
@@ -26,9 +28,9 @@ def add_endpoints(router):
 
         sd.debug_print_sessions()
 
-        return WordleInitResponse(session_id=str(session.uuid),
-                                  word_length=len(session.game_data.answer),
-                                  max_attempts=session.game_data.guesses)
+        return InitResponse(session_id=session.uuid,
+                            word_length=len(session.game_data.answer),
+                            max_attempts=session.game_data.guesses)
 
     @router.post("/wordle/guess/", tags=["wordle"])
     async def wordle_guess_game(
@@ -40,4 +42,23 @@ def add_endpoints(router):
 
         ss = WordleSessionSystem()
 
-        return GuessResponse
+        try:
+            gd: GameData = ss.get_session(player_guess.session_id)
+
+            gd = ss.validate_word(
+                player_guess.session_id, player_guess.guess)
+
+        except InvalidUUID as e:
+            raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
+                                f"Invalid UUID  {e.session_uuid}")
+        except InvalidWord as e:
+            raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
+                                detail=f"Invalid guess {e.guess}")
+
+        gs = GuessResponse(game_status='won' if gd.player_won else 'lost' if gd.guesses == 0 else 'in_progress',
+                           partial_word=gd.partial,
+                           hints=gd.contains.split(''),
+                           attempts_remaining=gd.guesses,
+                           )
+
+        return gs

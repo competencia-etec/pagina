@@ -1,7 +1,9 @@
-from dataclasses import dataclass
-
-from backend.services.games.wordle.wordle import GameData, start_game
 import uuid
+from dataclasses import dataclass
+from typing import Optional
+
+from backend.services.games.wordle.wordle import GameData, check_guess, is_valid_guess, start_game
+from backend.services.games.wordle.wordle_exeptions import GameCreationError, InvalidUUID, InvalidWord
 
 
 @dataclass
@@ -21,30 +23,67 @@ class WordleSessionSystem:
             cls._sessions = {}
         return cls._instance
 
-    def new_session(self, user_email: str) -> SessionData | None:
+    def new_session(self, user_email: str) -> SessionData:
+        """Creates new wordle game session, may raise GameCreationError"""
+
+        assert (self._instance)
         new_uuid = uuid.uuid4()
         new_game_data = start_game()
 
         if new_game_data is None:
-            return None
+            raise GameCreationError("Failed to initialize a new Wordle game.")
 
         self._sessions[new_uuid] = new_game_data
 
-        return SessionData(uuid=new_uuid,
-                           game_data=new_game_data,
-                           user_email=user_email)
+        return SessionData(
+            uuid=new_uuid,
+            game_data=new_game_data,
+            user_email=user_email
+        )
 
     def finish_session(self, session_uuid: uuid.UUID) -> None:
+        """Terminates the wordle session"""
+
+        assert (self._instance)
         self._sessions.pop(session_uuid, None)
 
-    def get_session(self, session_uuid: uuid.UUID) -> GameData | None:
-        if self._instance is None:
-            return None
-        return self._sessions[session_uuid]
+    def get_session(self, session_uuid: uuid.UUID) -> GameData:
+        """Returns Game data for the provided session_uuid, may raise InvalidUUID"""
 
-    def clear(self):
+        assert (self._instance)
+
+        gd = self._sessions.get(session_uuid)
+
+        if gd is None:
+            raise InvalidUUID(session_uuid)
+
+        return gd
+
+    def validate_word(self, session_uuid: uuid.UUID, guess: str) -> GameData:
+        """Validated user's guess, may raise InvalidUUID or Invalid Word"""
+
+        assert (self._instance)
+
+        if not is_valid_guess(guess):
+            raise InvalidWord(f"'{guess}' is not in the valid word list.")
+
+        gd = self.get_session(session_uuid)
+
+        if gd is None:
+            raise InvalidUUID(
+                f"No active session found for UUID: {session_uuid}")
+
+        return check_guess(gd, guess)
+
+    def clear(self) -> None:
+        """Clears all sessions"""
+
+        assert (self._instance)
         self._sessions.clear()
 
-    def debug_print_sessions(self):
+    def debug_print_sessions(self) -> None:
+        """DEBUG, prints all sessions"""
+
+        assert (self._instance)
         for key, value in self._sessions.items():
             print(f"UUID: {str(key)} \t {value}")
