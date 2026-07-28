@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException
 from starlette.status import HTTP_406_NOT_ACCEPTABLE
 
 from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess
