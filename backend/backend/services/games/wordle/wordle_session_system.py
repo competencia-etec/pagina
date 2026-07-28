@@ -7,6 +7,12 @@ from backend.services.games.wordle.wordle_exeptions import GameCreationError, In
 
 
 @dataclass
+class SessionEntry:
+    game_data: GameData
+    user_email: str
+
+
+@dataclass
 class SessionData:
     game_data: GameData
     uuid: uuid.UUID
@@ -15,7 +21,7 @@ class SessionData:
 
 class WordleSessionSystem:
     _instance = None
-    _sessions: dict[uuid.UUID, GameData]
+    _sessions: dict[uuid.UUID, SessionEntry]
 
     def __new__(cls):
         if cls._instance is None:
@@ -33,7 +39,7 @@ class WordleSessionSystem:
         if new_game_data is None:
             raise GameCreationError("Failed to initialize a new Wordle game.")
 
-        self._sessions[new_uuid] = new_game_data
+        self._sessions[new_uuid] = SessionEntry(new_game_data, user_email)
 
         return SessionData(
             uuid=new_uuid,
@@ -52,12 +58,12 @@ class WordleSessionSystem:
 
         assert (self._instance)
 
-        gd = self._sessions.get(uuid.UUID(session_uuid))
+        se = self._sessions.get(uuid.UUID(session_uuid))
 
-        if gd is None:
+        if se is None:
             raise InvalidUUID(session_uuid)
 
-        return gd
+        return se.game_data
 
     def validate_word(self, session_uuid: str, guess: str) -> GameData:
         """Validated user's guess, may raise InvalidUUID or Invalid Word"""
@@ -85,11 +91,15 @@ class WordleSessionSystem:
         assert (self._instance)
         self._sessions.clear()
 
+    def is_user_session(self, session_uuid: str, user_email: str) -> bool:
+        # TODO: Implement
+        pass
+
     def debug_print_sessions(self) -> None:
         """DEBUG, prints all sessions"""
 
         assert (self._instance)
         for key, value in self._sessions.items():
             print(f"UUID: {str(key)} \t {value}\n Prev Guesses:\n")
-            for val in value.prev_guesses:
+            for val in value.game_data.prev_guesses:
                 print(val)

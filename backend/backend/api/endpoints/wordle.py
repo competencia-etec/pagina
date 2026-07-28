@@ -1,11 +1,15 @@
 
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException
 from starlette.status import HTTP_406_NOT_ACCEPTABLE
 
+from backend.models.user import User
 from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess
 from backend.services.games.wordle.wordle import GameData
 from backend.services.games.wordle.wordle_exeptions import InvalidUUID, InvalidWord
 from backend.services.games.wordle.wordle_session_system import WordleSessionSystem
+from backend.services.user_service import get_current_active_user
 
 
 router = APIRouter()
@@ -14,15 +18,14 @@ router = APIRouter()
 def add_endpoints(router):
     @router.get("/wordle/start/", tags=["wordle"])
     async def wordle_start_game(
-        # HACK: removing authentication user for debug
-        # current_user: Annotated[User, Depends(get_current_active_user)],
+        current_user: Annotated[User, Depends(get_current_active_user)],
     ) -> InitResponse:
         """Create wordle session"""
 
         sd = WordleSessionSystem()
 
-        # session_id = sd.new_session(current_user.email)
-        session = sd.new_session("fakeemail@fakehost.com")
+        session = sd.new_session(current_user.email)
+
         if session is None:
             raise HTTPException(status_code=501, detail="Internal Error")
 
@@ -35,8 +38,7 @@ def add_endpoints(router):
     @router.post("/wordle/guess/", tags=["wordle"])
     async def wordle_guess_game(
         player_guess: PlayerGuess,
-        # HACK: removing authentication user for debug
-        # current_user: Annotated[User, Depends(get_current_active_user)],
+        current_user: Annotated[User, Depends(get_current_active_user)],
     ) -> GuessResponse:
         """Create wordle session"""
 
