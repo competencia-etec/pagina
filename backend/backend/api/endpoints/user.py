@@ -1,8 +1,9 @@
 from typing import Annotated
 from fastapi import Depends, APIRouter
 
-from backend.models.user import CreateUser, User
-from backend.services.user_service import get_current_active_user, create_user as service_create_user
+from backend.models.user import User
+from backend.services.user_service import get_current_active_user
+
 
 router = APIRouter()
 
@@ -14,8 +15,3 @@ def add_endpoints(router):
     ) -> User:
         """Validate current logging user"""
         return current_user
-
-    @router.post("/users/new/", tags=["user"])
-    async def web_create_user(user: CreateUser) -> User:
-        """Local user create"""
-        return await service_create_user(user)
