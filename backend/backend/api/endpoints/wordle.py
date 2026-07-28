@@ -2,7 +2,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from starlette.status import HTTP_406_NOT_ACCEPTABLE
+from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_406_NOT_ACCEPTABLE
 
 from backend.models.user import User
 from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess
@@ -46,6 +46,10 @@ def add_endpoints(router):
 
         try:
             gd: GameData = ss.get_session(player_guess.session_uuid)
+
+            if not ss.is_users_session(player_guess.session_uuid, current_user.email):
+                raise HTTPException(HTTP_401_UNAUTHORIZED,
+                                    "User session mismatch")
 
             gd = ss.validate_word(
                 player_guess.session_uuid, player_guess.guess)
