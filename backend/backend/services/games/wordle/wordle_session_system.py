@@ -91,9 +91,12 @@ class WordleSessionSystem:
         assert (self._instance)
         self._sessions.clear()
 
-    def is_user_session(self, session_uuid: str, user_email: str) -> bool:
-        # TODO: Implement
-        pass
+    def is_users_session(self, session_uuid: str, user_email: str) -> bool:
+        se = self._sessions.get(uuid.UUID(session_uuid))
+        if se is None:
+            raise InvalidUUID(session_uuid)
+
+        return se.user_email == user_email
 
     def debug_print_sessions(self) -> None:
         """DEBUG, prints all sessions"""
