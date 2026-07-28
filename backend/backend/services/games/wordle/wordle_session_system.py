@@ -50,7 +50,7 @@ class WordleSessionSystem:
 
         self._sessions.pop(user_email, None)
 
-    def get_session(self, user_email: str) -> GameData:
+    def get_session(self, user_email: str) -> SessionEntry:
         """Returns Game data for the provided user email, may raise InvalidSession"""
 
         assert (self._instance)
@@ -60,7 +60,7 @@ class WordleSessionSystem:
         if se is None:
             raise InvalidSession(user_email)
 
-        return se.game_data
+        return se
 
     def validate_word(self, session_email: str, guess: str) -> GameData:
         """Validated user's guess, may raise InvalidSession or Invalid Word"""
@@ -76,7 +76,7 @@ class WordleSessionSystem:
             raise InvalidSession(
                 f"No active session found for user: {session_email}")
 
-        gd = check_guess(gd, guess)
+        gd = check_guess(gd.game_data, guess)
 
         gd.prev_guesses.append(guess)
 

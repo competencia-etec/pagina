@@ -1,11 +1,11 @@
 
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_406_NOT_ACCEPTABLE
 
 from backend.models.user import User
-from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess
+from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess, SessionResponse
 from backend.services.games.wordle.wordle import GameData
 from backend.services.games.wordle.wordle_exeptions import InvalidSession, InvalidWord
 from backend.services.games.wordle.wordle_session_system import WordleSessionSystem
@@ -43,7 +43,7 @@ def add_endpoints(router):
         ss = WordleSessionSystem()
 
         try:
-            gd: GameData = ss.get_session(current_user.email)
+            gd: GameData = ss.get_session(current_user.email).game_data
 
             gd = ss.validate_word(current_user.email, player_guess.guess)
 
@@ -62,3 +62,18 @@ def add_endpoints(router):
                            )
 
         return gs
+
+    @router.get("/wordle/get_game/", tags=["wordle"])
+    async def wordle_get_game(
+        current_user: Annotated[User, Depends(get_current_active_user)],
+    ) -> SessionResponse:
+        """Retrieves a wordle session"""
+
+        ss = WordleSessionSystem()
+
+        se = ss.get_session(current_user.email)
+
+        return SessionResponse(hints=list(se.game_data.contains),
+                               partial_word=se.game_data.partial,
+                               attempts_remaining=se.game_data.guesses,
+                               prev_attempts=se.game_data.prev_guesses)
