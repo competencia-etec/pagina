@@ -1,6 +1,6 @@
 import './Keyboard.css'
 
-export default function Keyboard({ onKeyPress, guesses, solution }) {
+export default function Keyboard({ onKeyPress, guesses, results }) {
   const rows = [
     ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
     ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ'],
@@ -9,17 +9,19 @@ export default function Keyboard({ onKeyPress, guesses, solution }) {
 
   const getKeyStatus = (key) => {
     let status = ''
-    guesses.forEach(guess => {
-      if (!guess) return
+    guesses.forEach((guess, rowIdx) => {
+      const rowResult = results[rowIdx]
+      if (!guess || !rowResult) return
+      
       for (let i = 0; i < 5; i++) {
-        const char = guess[i]
-        if (char === key) {
-          if (solution[i] === char) {
+        if (guess[i] === key) {
+          const charStatus = rowResult[i]
+          if (charStatus === 'correct') {
             status = 'correct'
-            return // Best status found
-          } else if (solution.includes(char)) {
+            return
+          } else if (charStatus === 'present') {
             if (status !== 'correct') status = 'present'
-          } else {
+          } else if (charStatus === 'absent') {
             if (status !== 'correct' && status !== 'present') status = 'absent'
           }
         }

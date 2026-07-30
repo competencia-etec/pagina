@@ -3,12 +3,40 @@ import './Wordle.css'
 import Navbar from '../../components/Navbar/Navbar.jsx'
 import Keyboard from '../../components/Keyboard/Keyboard.jsx'
 
-const SOLUTION = 'REACT'
-const VALID_WORDS = ['REACT', 'HELLO', 'WORLD', 'PLANT', 'CLOUD', 'GAMES']
+// Mock function for backend communication
+const checkWordOnBackend = async (word) => {
+  // TODO: Implement actual backend call
+  // This single call should validate the word and return its status
+  
+  const VALID_WORDS = ['REACT', 'HELLO', 'WORLD', 'PLANT', 'CLOUD', 'GAMES']
+  const SOLUTION = 'REACT'
+  
+  const upperWord = word.toUpperCase()
+  
+  // 1. Check if word is valid
+  if (!VALID_WORDS.includes(upperWord)) {
+    return { isValid: false }
+  }
+
+  // 2. If valid, calculate statuses
+  const statuses = upperWord.split('').map((char, i) => {
+    if (char === SOLUTION[i]) return 'correct'
+    if (SOLUTION.includes(char)) return 'present'
+    return 'absent'
+  })
+
+  return {
+    isValid: true,
+    statuses,
+    isCorrect: upperWord === SOLUTION
+  }
+}
+
 const MAX_ATTEMPTS = 6
 
 export default function Wordle({ onGoLogin, onGoRegister, onLogout, onGoHome, user }) {
   const [guesses, setGuesses] = useState(Array(MAX_ATTEMPTS).fill(''))
+  const [results, setResults] = useState(Array(MAX_ATTEMPTS).fill(null))
   const [currentGuess, setCurrentGuess] = useState('')
   const [currentRow, setCurrentRow] = useState(0)
   const [gameOver, setGameOver] = useState(false)
@@ -46,19 +74,20 @@ export default function Wordle({ onGoLogin, onGoRegister, onLogout, onGoHome, us
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [currentGuess, gameOver, currentRow])
 
-  const isValidWord = (word) => {
-    return VALID_WORDS.includes(word.toUpperCase())
-  }
 
   const submitGuess = async () => {
     if (currentGuess.length !== 5) return
 
-    if (!isValidWord(currentGuess)) {
+    const response = await checkWordOnBackend(currentGuess)
+    
+    if (!response.isValid) {
       setShakeRow(currentRow)
       setTimeout(() => setShakeRow(null), 500)
       setMessage('Palabra inválida')
       return
     }
+
+    const { statuses, isCorrect } = response
 
     // Animation flip
     for (let i = 0; i < 5; i++) {
@@ -72,12 +101,16 @@ export default function Wordle({ onGoLogin, onGoRegister, onLogout, onGoHome, us
         newGuesses[currentRow] = currentGuess
         setGuesses(newGuesses)
 
-        if (currentGuess === SOLUTION) {
+        const newResults = [...results]
+        newResults[currentRow] = statuses
+        setResults(newResults)
+
+        if (isCorrect) {
           setGameOver(true)
           setMessage('¡Ganaste! 🎉')
         } else if (currentRow === MAX_ATTEMPTS - 1) {
           setGameOver(true)
-          setMessage(`Perdiste. La palabra era ${SOLUTION}`)
+          setMessage(`Perdiste.`)
         } else {
           setCurrentRow(prev => prev + 1)
           setCurrentGuess('')
@@ -87,10 +120,10 @@ export default function Wordle({ onGoLogin, onGoRegister, onLogout, onGoHome, us
 
   const getCellClass = (char, index, rowIdx) => {
     const isFlipped = flippedCells.includes(`${rowIdx}-${index}`)
-    if (isFlipped) {
-      if (char === SOLUTION[index]) return 'correct flipped'
-      if (SOLUTION.includes(char)) return 'present flipped'
-      return 'absent flipped'
+    const rowResult = results[rowIdx]
+
+    if (isFlipped && rowResult) {
+      return `${rowResult[index]} flipped`
     }
     if (char) return 'unevaluated'
     return ''
@@ -140,18 +173,18 @@ export default function Wordle({ onGoLogin, onGoRegister, onLogout, onGoHome, us
         {renderGrid()}
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', width: '100%' }}>
-          <Keyboard onKeyPress={handleKeyPress} guesses={guesses.filter(g => g !== '')} solution={SOLUTION} />
+          <Keyboard onKeyPress={handleKeyPress} guesses={guesses} results={results} />
         </div>
       </div>
 
       {gameOver && (
         <div className="wordle-modal-overlay">
           <div className="wordle-modal">
-            <h2>{currentGuess === SOLUTION ? '¡Ganaste! 🎉' : 'Juego Terminado'}</h2>
+            <h2>{results[currentRow]?.every(s => s === 'correct') ? '¡Ganaste! 🎉' : 'Juego Terminado'}</h2>
             <p>
-              {currentGuess === SOLUTION 
+              {results[currentRow]?.every(s => s === 'correct')
                 ? `¡Felicidades! Adivinaste la palabra en ${currentRow + 1} ${currentRow === 0 ? 'intento' : 'intentos'}.` 
-                : `La palabra era: ${SOLUTION}`}
+                : `Gracias por jugar.`}
             </p>
             <button className="wordle-modal-button" onClick={onGoHome}>
               Volver a la pantalla principal
