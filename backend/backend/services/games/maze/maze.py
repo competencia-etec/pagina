@@ -1,10 +1,15 @@
 from generator import Maze
 
+SMALL = 10
+MED = 20
+LARGE = 30
 
-class GameData:
-    def __init__(self):
-        self.m = Maze(15, 15, 5)
+
+class MazeGameData:
+    def __init__(self, size, seed):
+        self.m = Maze(size, size, seed)
         self.playerX, self.playerY = self._findLongestPath()
+        self.playerWon = False
 
     def _tracePath(self, x, y):
         assert 0 <= y < self.m.h
@@ -83,7 +88,19 @@ class GameData:
             case 4:  # Left
                 self.playerX -= 1
 
+        if (self.playerX, self.playerY) == (self.m.originX, self.m.originY):
+            self.playerWon = True
 
-def startGame():
-    gd = GameData()
+
+def startGame(difficulty: int, seed: int):
+    gd = None
+
+    match difficulty:
+        case 1:
+            gd = MazeGameData(SMALL, seed)
+        case 2:
+            gd = MazeGameData(MED, seed)
+        case 3:
+            gd = MazeGameData(LARGE, seed)
+
     return gd
