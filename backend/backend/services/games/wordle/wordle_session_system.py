@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from fastapi import HTTPException
 from starlette.status import HTTP_406_NOT_ACCEPTABLE
 
-from backend.services.games.wordle.wordle import GameData, check_guess, is_valid_guess, start_game
+from backend.services.games.wordle.wordle import WordleGameData, checkGuess, isValidGuess, startGame
 from backend.services.games.wordle.wordle_exeptions import GameCreationError, InvalidSession, InvalidWord
 
 
 @dataclass
 class SessionEntry:
-    game_data: GameData
+    game_data: WordleGameData
 
 
 class WordleSessionSystem:
@@ -27,7 +27,7 @@ class WordleSessionSystem:
 
         assert (self._instance)
 
-        new_game_data = start_game()
+        new_game_data = startGame()
 
         if new_game_data is None:
             raise GameCreationError("Failed to initialize a new Wordle game.")
@@ -60,12 +60,12 @@ class WordleSessionSystem:
 
         return se
 
-    def validate_word(self, session_email: str, guess: str) -> GameData:
+    def validate_word(self, session_email: str, guess: str) -> WordleGameData:
         """Validated user's guess, may raise InvalidSession or Invalid Word"""
 
         assert (self._instance)
 
-        if not is_valid_guess(guess):
+        if not isValidGuess(guess):
             raise InvalidWord(f"'{guess}' is not in the valid word list.")
 
         gd = self.get_session(session_email)
@@ -74,9 +74,9 @@ class WordleSessionSystem:
             raise InvalidSession(
                 f"No active session found for user: {session_email}")
 
-        gd = check_guess(gd.game_data, guess)
+        gd = checkGuess(gd.game_data, guess)
 
-        gd.prev_guesses.append(guess)
+        gd.prevGuesses.append(guess)
 
         return gd
 
@@ -92,5 +92,5 @@ class WordleSessionSystem:
         assert (self._instance)
         for key, value in self._sessions.items():
             print(f"Email: {str(key)} \t {value}\n Prev Guesses:\n")
-            for val in value.game_data.prev_guesses:
+            for val in value.game_data.prevGuesses:
                 print(val)

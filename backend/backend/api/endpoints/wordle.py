@@ -6,7 +6,7 @@ from starlette.status import HTTP_406_NOT_ACCEPTABLE
 
 from backend.models.user import User
 from backend.models.wordle import GuessResponse, InitResponse, PlayerGuess, SessionResponse
-from backend.services.games.wordle.wordle import GameData
+from backend.services.games.wordle.wordle import WordleGameData
 from backend.services.games.wordle.wordle_exeptions import InvalidSession, InvalidWord
 from backend.services.games.wordle.wordle_session_system import WordleSessionSystem
 from backend.services.user_service import get_current_active_user
@@ -43,7 +43,7 @@ def add_endpoints(router):
         ss = WordleSessionSystem()
 
         try:
-            gd: GameData = ss.get_session(current_user.email).game_data
+            gd: WordleGameData = ss.get_session(current_user.email).game_data
 
             gd = ss.validate_word(current_user.email, player_guess.guess)
 
@@ -54,12 +54,11 @@ def add_endpoints(router):
             raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
                                 detail=f"Invalid guess {e.guess}")
 
-        gs = GuessResponse(game_status='won' if gd.player_won else 'lost' if gd.guesses == 0 else 'in_progress',
+        gs = GuessResponse(game_status='won' if gd.playerWon else 'lost' if gd.guesses == 0 else 'in_progress',
                            partial_word=gd.partial,
                            hints=list(gd.contains),
                            attempts_remaining=gd.guesses,
-                           prev_attempts=gd.prev_guesses
-                           )
+                           prev_attempts=gd.prevGuesses)
 
         return gs
 
@@ -76,4 +75,4 @@ def add_endpoints(router):
         return SessionResponse(hints=list(se.game_data.contains),
                                partial_word=se.game_data.partial,
                                attempts_remaining=se.game_data.guesses,
-                               prev_attempts=se.game_data.prev_guesses)
+                               prev_attempts=se.game_data.prevGuesses)

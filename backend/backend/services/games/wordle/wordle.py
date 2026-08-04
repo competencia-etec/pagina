@@ -9,7 +9,7 @@ INIT_DATE = date(2026, 7, 1)
 
 
 def _replaceChar(string: str, char: str, idx: int):
-    return string[:idx] + char + string[1 + idx :]
+    return string[:idx] + char + string[1 + idx:]
 
 
 class WordleGameData:
@@ -20,7 +20,7 @@ class WordleGameData:
         self.partial = "?????"  # Green letters (each in its own position)
         self.playerWon = False
 
-        self.prev_guesses: List[str] = []
+        self.prevGuesses: List[str] = []
 
     def __str__(self):
         return (
@@ -29,7 +29,7 @@ class WordleGameData:
             f"  Guesses left: {self.guesses}\n"
             f"  Contains (Yellow): '{self.contains}'\n"
             f"  Partial (Green): {self.partial}\n"
-            f"  Player Won: {self.player_won}"
+            f"  Player Won: {self.playerWon}"
         )
 
 
@@ -46,20 +46,24 @@ def startGame() -> WordleGameData | None:
     return gd
 
 
-def checkGuess(gd: WordleGameData, guess: str):
+# HACK: Returning game data until assertion removed
+def checkGuess(gd: WordleGameData, guess: str) -> WordleGameData:
+    # FIX:: Assertions are removed on dist runtime, replace for classic conditional
     assert isValidGuess(guess)
 
     gd.guesses -= 1
 
     if gd.answer == guess:
         gd.playerWon = True
-        return
+        return gd
 
     for idx in range(len(gd.answer)):
         if gd.answer[idx] == guess[idx]:
             gd.partial = _replaceChar(gd.partial, gd.answer[idx], idx)
         if guess[idx] in gd.answer and not (guess[idx] in gd.contains):
             gd.contains += guess[idx]
+
+    return gd
 
 
 # FIX: Reading the whole file EVERY TIME we check answers
