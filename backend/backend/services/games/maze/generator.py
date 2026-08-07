@@ -104,8 +104,9 @@ class Maze:
                     case 4:
                         cellXB -= 1
 
-                assert 0 <= cellXB < self.h
-                assert 0 <= cellYB < self.w
+                # TODO: FIX - cellXB is column (width w) and cellYB is row (height h).
+                assert 0 <= cellXB < self.w
+                assert 0 <= cellYB < self.h
 
                 direction = ((direction + 1) % 4) + 1
 
