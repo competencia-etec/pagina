@@ -1,4 +1,8 @@
-from generator import Maze
+import random
+from typing import List
+
+from .generator import Maze
+from backend.models.maze import TurnStatus
 
 SMALL = 10
 MED = 20
@@ -6,12 +10,16 @@ LARGE = 30
 
 
 class MazeGameData:
-    def __init__(self, size, seed):
+    def __init__(self, size: int, seed: int):
         self.m = Maze(size, size, seed)
-        self.playerX, self.playerY = self._findLongestPath()
-        self.playerWon = False
+        start_cell = self._findLongestPath()
+        if start_cell is None:
+            # TODO: FIX - Fallback to bottom-right corner if no dead-end cell is found
+            start_cell = (self.m.w - 1, self.m.h - 1)
+        self.playerX, self.playerY = start_cell
+        self.playerWon = (self.playerX, self.playerY) == (self.m.originX, self.m.originY)
 
-    def _tracePath(self, x, y):
+    def _tracePath(self, x: int, y: int) -> int:
         assert 0 <= y < self.m.h
         assert 0 <= x < self.m.w
 
@@ -33,7 +41,7 @@ class MazeGameData:
             steps += 1
             assert steps <= self.m.w * self.m.h
 
-    def _isDeadEnd(self, x, y):
+    def _isDeadEnd(self, x: int, y: int) -> bool:
         assert 0 <= y < self.m.h
         assert 0 <= x < self.m.w
 
@@ -66,15 +74,34 @@ class MazeGameData:
 
         return bestCell
 
-    def _getCellWall(self, cellX: int, cellY: int, direction: int):
-        assert direction >= 1 and direction <= 4
-        wallsValue = self.walls[cellY][cellX]
+    def _getCellWall(self, cellX: int, cellY: int, direction: int) -> bool:
+        assert 1 <= direction <= 4
+        # TODO: FIX - Changed self.walls to self.m.walls as Maze holds the walls matrix
+        wallsValue = self.m.walls[cellY][cellX]
 
         mask = 1 << (direction - 1)  # e.g. 0010
         return bool(wallsValue & mask)
 
-    def movePlayer(self, direction: int):
-        assert direction >= 1 and direction <= 4
+    def get_possible_movements(self) -> List[bool]:
+        """
+        Returns a list of booleans indicating movement availability in order:
+        [Up (1), Down (3), Right (2), Left (4)] as expected by TurnStatus.
+        """
+        # TODO: FIX - Maintain TurnStatus possible_movements format [up, down, right, left]
+        up = not self._getCellWall(self.playerX, self.playerY, 1)
+        down = not self._getCellWall(self.playerX, self.playerY, 3)
+        right = not self._getCellWall(self.playerX, self.playerY, 2)
+        left = not self._getCellWall(self.playerX, self.playerY, 4)
+        return [up, down, right, left]
+
+    def get_turn_status(self) -> TurnStatus:
+        return TurnStatus(
+            possible_movements=self.get_possible_movements(),
+            won=self.playerWon,
+        )
+
+    def movePlayer(self, direction: int) -> bool:
+        assert 1 <= direction <= 4
         if self._getCellWall(self.playerX, self.playerY, direction):
             return False
 
@@ -91,16 +118,17 @@ class MazeGameData:
         if (self.playerX, self.playerY) == (self.m.originX, self.m.originY):
             self.playerWon = True
 
+        return True
 
-def startGame(difficulty: int, seed: int):
-    gd = None
+
+def startGame(difficulty: int = 1, seed: int | None = None) -> MazeGameData:
+    if seed is None:
+        seed = random.randint(1, 100000)
 
     match difficulty:
-        case 1:
-            gd = MazeGameData(SMALL, seed)
         case 2:
-            gd = MazeGameData(MED, seed)
+            return MazeGameData(MED, seed)
         case 3:
-            gd = MazeGameData(LARGE, seed)
-
-    return gd
+            return MazeGameData(LARGE, seed)
+        case _:
+            return MazeGameData(SMALL, seed)
