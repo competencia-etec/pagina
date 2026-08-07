@@ -35,7 +35,7 @@ class MazeSessionSystem:
         if self._sessions.get(user_email) is not None:
             raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
                                 detail="Session already created for this user")
-        
+
         session_entry = SessionEntry(game_data=new_game_data)
         self._sessions[user_email] = session_entry
 
@@ -66,7 +66,8 @@ class MazeSessionSystem:
         assert self._instance
 
         if direction not in (1, 2, 3, 4):
-            raise InvalidMove(f"Invalid direction {direction}. Must be 1 (Up), 2 (Right), 3 (Down), or 4 (Left).")
+            raise InvalidMove(f"Invalid direction {
+                              direction}. Must be 1 (Up), 2 (Right), 3 (Down), or 4 (Left).")
 
         session = self.get_session(session_email)
         session.game_data.movePlayer(direction)
