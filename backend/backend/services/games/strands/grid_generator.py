@@ -1,13 +1,8 @@
-from FlagEmbedding import FlagModel
-import requests
 import pickle
 from scipy.spatial import KDTree
 import random
 import numpy as np
 import itertools
-from dotenv import dotenv_values
-
-config = dotenv_values(".env")
 
 def generate_n_cont_set(word, n):
     n_letters_word = set()
@@ -26,9 +21,6 @@ def rotate_grid(grid):
 #        response = requests.post(self.API_URL, headers=self.headers, json={"inputs":[payload]})
 #        return np.array(response.json()[0], dtype=np.float32)
 #model = Model()
-model = FlagModel('BAAI/bge-m3',
-        query_instruction_for_retrieval="Genera una representacion para esta palabra usando palabras relacionadas:",
-        use_fp16=True)
 
 with open("common_spanish_words.txt") as f:
     all_words = f.readlines()
@@ -55,9 +47,12 @@ tree = KDTree(embeddings)
 def generator(query:str=None):
 
     if query is None:
-        query = random.choice(words)
+        query_idx = random.randrange(len(words))
+        query = words[query_idx]
+    else:
+        query_idx = words.index(query)
 
-    query_embedding = model.encode(query)
+    query_embedding = embeddings[query_idx]
 
     # Get the 1000 most relevant words/phrases
     dd, ii = tree.query(query_embedding, k=1000)
@@ -82,7 +77,7 @@ def generator(query:str=None):
     subtree = KDTree(subembeddings)
 
     # Get words/phrases the most relevant to spangram
-    ddd, iii = subtree.query(model.encode(spangram), k=250)
+    ddd, iii = subtree.query(embeddings[words.index(spangram)], k=250)
 
     candidates: list[str] = []
     n = 4
