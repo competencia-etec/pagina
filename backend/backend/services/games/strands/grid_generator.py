@@ -3,7 +3,7 @@ from scipy.spatial import KDTree
 import random
 import numpy as np
 import itertools
-
+import random
 
 def generate_n_cont_set(word, n):
     n_letters_word = set()
@@ -49,10 +49,7 @@ tree = KDTree(embeddings)
 
 
 def generator():
-
-    query_idx = words.index("")
-
-    query_embedding = embeddings[query_idx]
+    query_embedding = embeddings[random.randint(0, len(embeddings) - 1)]
 
     # Get the 1000 most relevant words/phrases
     dd, ii = tree.query(query_embedding, k=1000)
@@ -296,4 +293,4 @@ def generator():
         for letter_coord, letter in zip(word_coords, word):
             grid[letter_coord[0]][letter_coord[1]] = letter
 
-    return grid, new_letter_coords, spangram_idx, query
+    return grid, new_letter_coords, spangram_idx
