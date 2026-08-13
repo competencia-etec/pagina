@@ -4,23 +4,26 @@ import random
 import numpy as np
 import itertools
 
+
 def generate_n_cont_set(word, n):
     n_letters_word = set()
     for i in range(len(word) - n + 1):
         n_letters_word.add(word[i:i+n])
     return n_letters_word
 
+
 def rotate_grid(grid):
     return [[tuple(item) for item in row] for row in np.rot90(np.array(grid))]
 
-#class Model:
+# class Model:
 #    API_URL = "https://api-inference.huggingface.co/models/BAAI/bge-small-en-v1.5"
 #    API_TOKEN = config["API_TOKEN"]
 #    headers = {"Authorization": f"Bearer {API_TOKEN}"}
 #    def encode(self, payload):
 #        response = requests.post(self.API_URL, headers=self.headers, json={"inputs":[payload]})
 #        return np.array(response.json()[0], dtype=np.float32)
-#model = Model()
+# model = Model()
+
 
 with open("common_spanish_words.txt") as f:
     all_words = f.readlines()
@@ -44,13 +47,10 @@ with open("embeddings.pkl", "rb") as f:
 
 tree = KDTree(embeddings)
 
-def generator(query:str=None):
 
-    if query is None:
-        query_idx = random.randrange(len(words))
-        query = words[query_idx]
-    else:
-        query_idx = words.index(query)
+def generator():
+
+    query_idx = words.index("")
 
     query_embedding = embeddings[query_idx]
 
@@ -62,7 +62,8 @@ def generator(query:str=None):
     spangram_weights = []
     for weight, i in zip(dd, ii):
         candidate = words[i].strip()
-        candidate_alpha_only = "".join([char for char in candidate if char.isalpha()])
+        candidate_alpha_only = "".join(
+            [char for char in candidate if char.isalpha()])
         if 6 <= len(candidate_alpha_only) <= 13:
             spangrammable.append(candidate)
             similarity = 1.0 - (weight ** 2) / 2.0
@@ -131,7 +132,7 @@ def generator(query:str=None):
                 chosen.remove(-remaining)
                 break
             else:
-                for i in range(random.choice([1,1,1,2,2,3])):
+                for i in range(random.choice([1, 1, 1, 2, 2, 3])):
                     to_remove = random.choice(chosen)
                     chosen.remove(to_remove)
                     plain_lengths_cpy.append(to_remove)
@@ -163,7 +164,7 @@ def generator(query:str=None):
     for i in range(8):
         row = []
         for j in range(6):
-            row.append((i,j))
+            row.append((i, j))
         grid.append(row)
 
     if spangram_direction == "ttb":
@@ -199,8 +200,7 @@ def generator(query:str=None):
     chosen_words = chosen_combo + [spangram] + non_spangrams
     spangram_idx = chosen_words.index(spangram)
 
-
-    coords: list[list[tuple[int,int]]] = []
+    coords: list[list[tuple[int, int]]] = []
 
     for word in chosen_words:
         word_coords = []
@@ -211,7 +211,6 @@ def generator(query:str=None):
         else:
             coords.append(list(reversed(word_coords)))
 
-
     def get_word_letter_idx(coords, letter_coords, words):
         for word_idx, word_coords in enumerate(coords):
             if letter_coords in word_coords:
@@ -220,20 +219,17 @@ def generator(query:str=None):
                 letter = word[letter_idx]
                 return letter_idx, letter, word_idx, word
 
-
-    def check_word_continuity(word_coords:list[list[tuple[int,int]]]):
+    def check_word_continuity(word_coords: list[list[tuple[int, int]]]):
         for coords_a, coords_b in zip(word_coords[:-1], word_coords[1:]):
             if abs(coords_a[0] - coords_b[0]) > 1 or abs(coords_a[1] - coords_b[1]) > 1:
                 return False
         return True
 
-
-    def spangram_valid(word_coords:list[tuple[int,int]], direction: str):
+    def spangram_valid(word_coords: list[tuple[int, int]], direction: str):
         if direction == "ltr":
             return 0 in [coord[1] for coord in word_coords] and 5 in [coord[1] for coord in word_coords]
         else:
             return 0 in [coord[0] for coord in word_coords] and 7 in [coord[0] for coord in word_coords]
-
 
     def shuffle_grid(letter_coords, words, n):
         letter_coords_cpy = [word[:] for word in letter_coords]
@@ -241,25 +237,28 @@ def generator(query:str=None):
 
         while shuffles < n:
             a_coord = random.randint(0, 7), random.randint(0, 5)
-            a_letter_idx, a_letter, a_word_idx, a_word = get_word_letter_idx(letter_coords_cpy, a_coord, words)
+            a_letter_idx, a_letter, a_word_idx, a_word = get_word_letter_idx(
+                letter_coords_cpy, a_coord, words)
 
             b_candidate_coords = []
-            for i in range(-1,2):
+            for i in range(-1, 2):
                 row = a_coord[0] + i
                 if row < 0 or row >= 8:
                     continue
-                for j in range(-1,2):
+                for j in range(-1, 2):
                     col = a_coord[1] + j
                     if col < 0 or col >= 6 or a_coord == (row, col):
                         continue
 
                     b_candidate_coords.append((row, col))
-            
+
             random.shuffle(b_candidate_coords)
             for b_coord in b_candidate_coords:
-                b_letter_idx, b_letter, b_word_idx, b_word = get_word_letter_idx(letter_coords_cpy, b_coord, chosen_words)
+                b_letter_idx, b_letter, b_word_idx, b_word = get_word_letter_idx(
+                    letter_coords_cpy, b_coord, chosen_words)
                 if a_word_idx == b_word_idx:
-                    possible_word_coords = [item[:] for item in letter_coords_cpy[a_word_idx]]
+                    possible_word_coords = [item[:]
+                                            for item in letter_coords_cpy[a_word_idx]]
                     possible_word_coords[a_letter_idx] = b_coord
                     possible_word_coords[b_letter_idx] = a_coord
                     if a_word_idx == spangram_idx and not spangram_valid(possible_word_coords, spangram_direction):
@@ -296,5 +295,5 @@ def generator(query:str=None):
     for word_coords, word in zip(new_letter_coords, chosen_words):
         for letter_coord, letter in zip(word_coords, word):
             grid[letter_coord[0]][letter_coord[1]] = letter
-    
+
     return grid, new_letter_coords, spangram_idx, query
