@@ -2,17 +2,21 @@ import { GoogleIcon } from '../../components/GoogleIcon/GoogleIcon.jsx'
 
 const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/api/auth/google'
 
-function handleGoogleRegister() {
-  window.location.href = GOOGLE_OAUTH_URL
-}
-
 const FEATURES = [
   'Sin contraseña — solo Google.',
   'Tus puntos se guardan solos.',
   'Competís contra todos del curso.',
 ]
 
-export default function RegisterPage({ onGoLogin, onGoHome, onRegisterSimulate }) {
+export default function RegisterPage({ onGoLogin, onGoHome, onRegister }) {
+  const handleRegister = () => {
+    if (onRegister) {
+      onRegister();
+    } else {
+      window.location.href = GOOGLE_OAUTH_URL;
+    }
+  };
+
   return (
     <main className="auth-card" role="main">
       <div className="logo" onClick={onGoHome} style={{ cursor: 'pointer' }} role="button" aria-label="Volver al inicio">
@@ -31,21 +35,11 @@ export default function RegisterPage({ onGoLogin, onGoHome, onRegisterSimulate }
       <button
         id="btn-google-register"
         className="btn-google"
-        onClick={handleGoogleRegister}
+        onClick={handleRegister}
         aria-label="Registrarse con Google"
       >
         <GoogleIcon size={17} />
         Continuar con Google
-      </button>
-
-      {/* For development simulation without backend */}
-      <button
-        className="btn-play"
-        style={{ marginTop: '12px', width: '100%', fontStyle: 'italic' }}
-        onClick={onRegisterSimulate}
-        aria-label="Simular registro"
-      >
-        (Simular Registro)
       </button>
 
       <ul className="auth-features" aria-label="Beneficios">
@@ -69,5 +63,5 @@ export default function RegisterPage({ onGoLogin, onGoHome, onRegisterSimulate }
         <a href="/privacy">privacidad</a>.
       </p>
     </main>
-  )
+  );
 }

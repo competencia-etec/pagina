@@ -20,9 +20,7 @@ const GAMES = [
   { id: 'palabras', title: 'Cadena de Palabras', description: 'Formá la cadena más larga.', icon: '🔗' },
 ]
 
-export default function MainPage({ onGoLogin, onGoRegister, onLogout, user, setPage }) {
-  const isLoggedIn = !!user
-
+export default function MainPage({ onGoLogin, onGoRegister, onLogout, user, isLoggedIn, setPage }) {
   return (
     <div className="main-page">
       <Navbar

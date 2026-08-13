@@ -69,4 +69,4 @@ def add_endpoints(router):
 
         tk = create_access_token({"sub": user.email})
 
-        return Token(access_token=tk)
+        return RedirectResponse(f"http://localhost:5173/auth/callback?token={tk}")
