@@ -13,11 +13,14 @@ LetterCoords = List[Coords]
 with ALL_WORDS_FILE.open("r") as f:
     spanish_dict = {w.strip() for w in f if w.strip()}
 
+
 def _is_adjacent(a: Tuple[int, int], b: Tuple[int, int]) -> bool:
     return abs(a[0] - b[0]) <= 1 and abs(a[1] - b[1]) <= 1 and a != b
 
+
 def _coords_to_word(grid: Grid, coords: Coords) -> str:
     return "".join(grid[r][c] for r, c in coords)
+
 
 def _normalize(word: str) -> str:
     return "".join(ch for ch in word.lower() if ch.isalpha())
@@ -121,6 +124,7 @@ def attempt(game: StrandsGame, positions: Coords) -> dict:
         "is_bonus": False,
     }
 
+
 def get_hint(game) -> Optional[Coords]:
     if game.hint_counter < game.HINT_THRESHOLD:
         return None
@@ -130,3 +134,4 @@ def get_hint(game) -> Optional[Coords]:
         if word not in game.revealed:
             return list(coords)
     return None
+

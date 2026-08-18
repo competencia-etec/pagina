@@ -1,9 +1,5 @@
 from FlagEmbedding import FlagModel
 import pickle
-from scipy.spatial import KDTree
-import random
-import numpy as np
-import itertools
 
 model = FlagModel('BAAI/bge-m3',
                   query_instruction_for_retrieval="Generate a representation for this word for retrieving related words:",
@@ -23,4 +19,5 @@ for word in all_words:
 embeddings = model.encode(words)
 
 with open("embeddings.pkl", "wb+") as f:
-     pickle.dump(embeddings, f)
+    pickle.dump(embeddings, f)
+

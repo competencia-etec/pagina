@@ -1,9 +1,9 @@
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
-from backend.services.games.strands.generator import Coords
+from backend.services.games.strands.strands import Coords
 
 
 class TurnStatus(BaseModel):
