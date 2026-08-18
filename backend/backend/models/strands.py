@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional, Tuple
+from typing import List, Literal, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict
 
@@ -6,7 +6,7 @@ Coords = List[Tuple[int, int]]
 
 
 class InitResponse(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
+    model_config = ConfigDict(extra='forbid')
 
     session_email: str
     grid: List[List[str]]
@@ -20,13 +20,13 @@ class InitResponse(BaseModel):
 
 
 class PlayerAttempt(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
+    model_config = ConfigDict(extra='forbid')
 
-    coords: Coords
+    coords: List[Union[Tuple[int, int], List[int]]]
 
 
 class AttemptResponse(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
+    model_config = ConfigDict(extra='forbid')
 
     valid: bool
     word: Optional[str] = None
@@ -41,7 +41,7 @@ class AttemptResponse(BaseModel):
 
 
 class SessionResponse(BaseModel):
-    model_config = ConfigDict(extra='forbid', strict=True)
+    model_config = ConfigDict(extra='forbid')
 
     session_email: str
     grid: List[List[str]]

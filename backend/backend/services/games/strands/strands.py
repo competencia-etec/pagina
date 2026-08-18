@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Tuple, Optional
 
-from grid_generator import generator as generate_grid
+from .grid_generator import generator as generate_grid
 
 MODULE_PATH = Path(__file__).parent
 ALL_WORDS_FILE = MODULE_PATH / "all_spanish_words.txt"
@@ -10,8 +10,10 @@ Grid = List[List[str]]
 Coords = List[Tuple[int, int]]
 LetterCoords = List[Coords]
 
-with ALL_WORDS_FILE.open("r") as f:
-    spanish_dict = {w.strip() for w in f if w.strip()}
+spanish_dict: set[str] = set()
+if ALL_WORDS_FILE.exists():
+    with ALL_WORDS_FILE.open("r", encoding="utf-8") as f:
+        spanish_dict = {w.strip() for w in f if w.strip()}
 
 
 def _is_adjacent(a: Tuple[int, int], b: Tuple[int, int]) -> bool:

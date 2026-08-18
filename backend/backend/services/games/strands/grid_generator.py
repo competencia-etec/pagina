@@ -1,9 +1,16 @@
+try:
+    from scipy.spatial import KDTree
+except ImportError:
+    KDTree = None
+try:
+    import numpy as np
+except ImportError:
+    np = None
 import pickle
-from scipy.spatial import KDTree
 import random
-import numpy as np
 import itertools
-import random
+from pathlib import Path
+
 
 def generate_n_cont_set(word, n):
     n_letters_word = set()
@@ -25,8 +32,15 @@ def rotate_grid(grid):
 # model = Model()
 
 
-with open("common_spanish_words.txt") as f:
-    all_words = f.readlines()
+MODULE_PATH = Path(__file__).parent
+COMMON_WORDS_FILE = MODULE_PATH / "common_spanish_words.txt"
+EMBEDDINGS_FILE = MODULE_PATH / "embeddings.pkl"
+
+if COMMON_WORDS_FILE.exists():
+    with open(COMMON_WORDS_FILE, "r", encoding="utf-8") as f:
+        all_words = f.readlines()
+else:
+    all_words = []
 
 words = []
 for word in all_words:
@@ -42,13 +56,43 @@ for word in words:
     else:
         lens[word_len] += 1
 
-with open("embeddings.pkl", "rb") as f:
-    embeddings = pickle.load(f)
+if EMBEDDINGS_FILE.exists():
+    with open(EMBEDDINGS_FILE, "rb") as f:
+        embeddings = pickle.load(f)
+    tree = KDTree(embeddings)
+else:
+    embeddings = []
+    tree = None
 
-tree = KDTree(embeddings)
+
+DEFAULT_GRID = [
+    ["F", "R", "O", "V", "W", "E"],
+    ["A", "I", "W", "S", "K", "D"],
+    ["M", "Y", "N", "G", "I", "D"],
+    ["I", "L", "R", "I", "S", "I"],
+    ["C", "B", "F", "E", "S", "N"],
+    ["A", "O", "T", "N", "N", "G"],
+    ["K", "U", "E", "D", "A", "C"],
+    ["E", "Q", "U", "S", "D", "E"],
+]
+DEFAULT_COORDS = [
+    [(0, 4), (0, 5), (1, 5), (2, 5), (3, 5),
+     (4, 5), (5, 5)],  # WEDDING (spangram)
+    [(0, 0), (1, 0), (2, 0), (3, 0), (3, 1), (2, 1)],          # FAMILY
+    [(0, 3), (0, 2), (1, 2), (1, 3)],                          # VOWS
+    [(0, 1), (1, 1), (2, 2), (2, 3)],                          # RING
+    [(1, 4), (2, 4), (3, 4), (4, 4)],                          # KISS
+    [(4, 0), (5, 0), (6, 0), (7, 0)],                          # CAKE
+    [(4, 1), (5, 1), (6, 1), (7, 1), (7, 2), (6, 2), (5, 2)],  # BOUQUET
+    [(4, 2), (3, 2), (3, 3), (4, 3), (5, 3), (6, 3), (7, 3)],  # FRIENDS
+    [(7, 4), (6, 4), (5, 4), (6, 5), (7, 5)],                  # DANCE
+]
+DEFAULT_SPANGRAM_IDX = 0
 
 
 def generator():
+    if tree is None or not embeddings or not words:
+        return DEFAULT_GRID, DEFAULT_COORDS, DEFAULT_SPANGRAM_IDX
     query_embedding = embeddings[random.randint(0, len(embeddings) - 1)]
 
     # Get the 1000 most relevant words/phrases
