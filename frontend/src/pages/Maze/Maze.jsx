@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext.jsx'
-import { startMaze, moveMaze } from '../../services/games.js'
+import { startMaze, moveMaze, getMazeGame } from '../../services/games.js'
 import './Maze.css'
 
 export default function Maze({ onGoHome }) {
@@ -16,7 +16,13 @@ export default function Maze({ onGoHome }) {
 
   useEffect(() => {
     if (isAuthenticated) {
-      startMaze().then(setGame).catch(() => setMessage('Error al iniciar laberinto'))
+      // Try to get existing game first
+      getMazeGame()
+        .then(setGame)
+        .catch(() => {
+          // No existing session, start new one
+          startMaze().then(setGame).catch(() => setMessage('Error al iniciar laberinto'))
+        })
     }
   }, [isAuthenticated])
 

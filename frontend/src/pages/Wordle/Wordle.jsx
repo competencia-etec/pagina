@@ -17,7 +17,11 @@ export default function Wordle({ onGoHome }) {
 
   useEffect(() => {
     if (isAuthenticated) {
-      startWordle().then(setGame).catch(() => setMessage('Error al iniciar juego'))
+      getWordleGame()
+        .then(setGame)
+        .catch(() => {
+          startWordle().then(setGame).catch(() => setMessage('Error al iniciar juego'))
+        })
     }
   }, [isAuthenticated])
 
