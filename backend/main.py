@@ -21,9 +21,15 @@ db = DatabaseConnection()
 db.init("sqlite:///foo.db", True)
 
 
-add_auth_endpoints(router)
-add_user_endpoints(router)
-add_wordle_endpoint(router)
-add_maze_endpoints(router)
+auth_router = APIRouter()
+user_router = APIRouter(prefix="/user")
+game_router = APIRouter()
 
-app.include_router(router)
+add_auth_endpoints(auth_router)
+add_user_endpoints(user_router)
+add_wordle_endpoint(game_router)
+add_maze_endpoints(game_router)
+
+app.include_router(auth_router)
+app.include_router(user_router)
+app.include_router(game_router)
