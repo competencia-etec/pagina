@@ -58,22 +58,31 @@ def add_endpoints(router):
 
         try:
             session = ss.get_session(current_user.email)
+
             coords: List[Tuple[int, int]] = [
-                (c[0], c[1]) for c in player_attempt.coords]
+                (c[0], c[1]) for c in player_attempt.coords
+            ]
+
             gd = session.game_data
+
             res = service_strands_attempt(gd, coords)
+
             found_paths = getattr(gd, 'found_paths', None)
+
             if found_paths is not None and res["valid"] and res.get("is_game_word"):
                 if coords not in found_paths:
                     found_paths.append(coords)
+
         except InvalidSession as e:
             raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
                                 detail=f"Invalid session for: {e.session_email}")
 
         spangram = gd.words[gd.spangram_idx] if (
             gd.words and 0 <= gd.spangram_idx < len(gd.words)) else ""
+
         is_spangram = res.get("is_game_word", False) and (
             res.get("word") == spangram)
+
         game_status = 'won' if (gd.words and len(
             gd.revealed) == len(gd.words)) else 'in_progress'
 

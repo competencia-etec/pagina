@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional, Tuple, Union
+from typing import List, Literal, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict
 
@@ -22,7 +22,7 @@ class InitResponse(BaseModel):
 class PlayerAttempt(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
-    coords: List[Union[Tuple[int, int], List[int]]]
+    coords: Coords
 
 
 class AttemptResponse(BaseModel):
