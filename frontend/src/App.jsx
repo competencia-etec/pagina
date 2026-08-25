@@ -1,26 +1,45 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { AuthProvider, useAuth } from './context/AuthContext.jsx'
+import AuthCallback from './pages/AuthCallback/AuthCallback.jsx'
 import MainPage from './pages/MainPage/MainPage'
 import LoginPage from './pages/LoginPage/LoginPage'
 import RegisterPage from './pages/RegisterPage/RegisterPage'
 import Wordle from './pages/Wordle/Wordle'
+import Maze from './pages/Maze/Maze'
+import Strands from './pages/Strands/Strands'
 import './index.css'
 
-function App() {
-  const [page, setPage] = useState('main') // 'main' | 'login' | 'register' | 'wordle'
-  const [user, setUser] = useState(null) // null or { name: string }
+function AppContent() {
+  const { user, isAuthenticated, loading, login, logout } = useAuth()
+  const [page, setPage] = useState('main')
+  const [showCallback, setShowCallback] = useState(false)
 
-  // Simple handler to mock login for testing the UI states
-  const handleSimulateLogin = (name = 'Estudiante ETEC') => {
-    setUser({ name })
-    setPage('main')
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.has('token')) {
+      setShowCallback(true)
+    }
+  }, [])
+
+  const handleAuthDone = (nextPage) => {
+    setShowCallback(false)
+    setPage(nextPage)
+  }
+
+  if (showCallback) {
+    return <AuthCallback onDone={handleAuthDone} />
+  }
+
+  if (loading) {
+    return <div className="auth-card">Cargando...</div>
   }
 
   if (page === 'main') {
     return (
       <MainPage
-        onGoLogin={() => setPage('login')}
-        onGoRegister={() => setPage('register')}
-        onLogout={() => setUser(null)}
+        onGoLogin={login}
+        onGoRegister={login}
+        onLogout={logout}
         user={user}
         setPage={setPage}
       />
@@ -28,27 +47,45 @@ function App() {
   }
 
   if (page === 'wordle') {
-    return <Wordle onGoHome={() => setPage('main')} />
+    if (!isAuthenticated) {
+      return <LoginPage onGoHome={login} onGoRegister={login} />
+    }
+    return (
+      <Wordle
+        onGoLogin={() => setPage('login')}
+        onGoRegister={() => setPage('register')}
+        onLogout={() => setPage('main')}
+        onGoHome={() => setPage('main')}
+        user={user}
+      />
+    )
+  }
+  if (page === 'strands') {
+    return <Strands onGoHome={() => setPage('main')} />
+  }
+
+  if (page === 'maze') {
+    if (!isAuthenticated) {
+      return <LoginPage onGoHome={login} onGoRegister={login} />
+    }
+    return <Maze onGoHome={() => setPage('main')} />
   }
 
   return (
     <div className="app-root">
       {page === 'login' ? (
-        <LoginPage
-          onGoRegister={() => setPage('register')}
-          onGoHome={() => setPage('main')}
-          onLoginSimulate={() => handleSimulateLogin()}
-        />
+        <LoginPage onGoRegister={login} onGoHome={login} />
       ) : (
-        <RegisterPage
-          onGoLogin={() => setPage('login')}
-          onGoHome={() => setPage('main')}
-          onRegisterSimulate={() => handleSimulateLogin()}
-        />
+        <RegisterPage onGoLogin={login} onGoHome={login} />
       )}
     </div>
   )
 }
 
-export default App
-
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  )
+}

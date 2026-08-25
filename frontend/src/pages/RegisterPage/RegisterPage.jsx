@@ -1,6 +1,7 @@
 import { GoogleIcon } from '../../components/GoogleIcon/GoogleIcon.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 
-const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/api/auth/google'
+const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/auth/login_oauth'
 
 function handleGoogleRegister() {
   window.location.href = GOOGLE_OAUTH_URL
@@ -12,7 +13,9 @@ const FEATURES = [
   'Competís contra todos del curso.',
 ]
 
-export default function RegisterPage({ onGoLogin, onGoHome, onRegisterSimulate }) {
+export default function RegisterPage({ onGoLogin, onGoHome }) {
+  const { login } = useAuth()
+
   return (
     <main className="auth-card" role="main">
       <div className="logo" onClick={onGoHome} style={{ cursor: 'pointer' }} role="button" aria-label="Volver al inicio">
@@ -36,16 +39,6 @@ export default function RegisterPage({ onGoLogin, onGoHome, onRegisterSimulate }
       >
         <GoogleIcon size={17} />
         Continuar con Google
-      </button>
-
-      {/* For development simulation without backend */}
-      <button
-        className="btn-play"
-        style={{ marginTop: '12px', width: '100%', fontStyle: 'italic' }}
-        onClick={onRegisterSimulate}
-        aria-label="Simular registro"
-      >
-        (Simular Registro)
       </button>
 
       <ul className="auth-features" aria-label="Beneficios">

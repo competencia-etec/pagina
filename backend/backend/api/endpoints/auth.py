@@ -9,6 +9,8 @@ from backend.services.oauth_service import create_access_token, oauth_callback
 from backend.services.user_service import create_user, get_user_by_email
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+## FIX: Move to .env
+FRONTEND_CALLBACK_URL = "http://localhost:5173/oauth2redirect"
 
 
 def add_endpoints(router):
@@ -44,4 +46,4 @@ def add_endpoints(router):
 
         tk = create_access_token({"sub": user.email})
 
-        return Token(access_token=tk)
+        return RedirectResponse(f"{FRONTEND_CALLBACK_URL}?token={tk}")

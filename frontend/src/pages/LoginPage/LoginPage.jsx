@@ -1,14 +1,19 @@
 import { GoogleIcon } from '../../components/GoogleIcon/GoogleIcon.jsx'
+import { useAuth } from '../../context/AuthContext.jsx'
 
-const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/api/auth/google'
+const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/auth/login_oauth'
 
 function handleGoogleLogin() {
   window.location.href = GOOGLE_OAUTH_URL
 }
 
-export function LeftPanel() { return null } // no left panel in mobile-first layout
+export function LeftPanel() {
+  return null
+}
 
-export default function LoginPage({ onGoRegister, onGoHome, onLoginSimulate }) {
+export default function LoginPage({ onGoRegister, onGoHome }) {
+  const { login } = useAuth()
+
   return (
     <main className="auth-card" role="main">
       <div className="logo" onClick={onGoHome} style={{ cursor: 'pointer' }} role="button" aria-label="Volver al inicio">
@@ -32,16 +37,6 @@ export default function LoginPage({ onGoRegister, onGoHome, onLoginSimulate }) {
       >
         <GoogleIcon size={17} />
         Continuar con Google
-      </button>
-
-      {/* For development simulation without backend */}
-      <button
-        className="btn-play"
-        style={{ marginTop: '12px', width: '100%', fontStyle: 'italic' }}
-        onClick={onLoginSimulate}
-        aria-label="Simular inicio de sesión"
-      >
-        (Simular Login)
       </button>
 
       <p className="auth-footer">
