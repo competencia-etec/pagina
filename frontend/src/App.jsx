@@ -6,12 +6,17 @@ import LoginPage from './pages/LoginPage/LoginPage'
 import RegisterPage from './pages/RegisterPage/RegisterPage'
 import Wordle from './pages/Wordle/Wordle'
 import Maze from './pages/Maze/Maze'
+import Strands from './pages/Strands/Strands'
 import './index.css'
 
 function AppContent() {
   const { user, isAuthenticated, loading, login, logout } = useAuth()
   const [page, setPage] = useState('main')
   const [showCallback, setShowCallback] = useState(false)
+
+function App() {
+  const [page, setPage] = useState('main') // 'main' | 'login' | 'register' | 'wordle'
+  const [user, setUser] = useState(null) // null or { name: string }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -50,6 +55,9 @@ function AppContent() {
       return <LoginPage onGoHome={login} onGoRegister={login} />
     }
     return <Wordle onGoHome={() => setPage('main')} />
+  }
+  if (page === 'strands') {
+    return <Strands onGoHome={() => setPage('main')} />
   }
 
   if (page === 'maze') {
