@@ -3,8 +3,8 @@ services:
     build:
       context: ./backend
       dockerfile: dockerfile
-    ports:
-      - "8000:80"
+    expose:
+      - "80"
     develop:
       watch:
         - action: sync
@@ -14,3 +14,12 @@ services:
             - .venv/
         - action: rebuild
           path: ./backend/pyproject.toml
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+    ports:
+      - "8000:80"
+    depends_on:
+      - backend
