@@ -73,7 +73,11 @@ def add_endpoints(router):
 
         ss = WordleSessionSystem()
 
-        se = ss.get_session(current_user.email)
+        try:
+            se = ss.get_session(current_user.email)
+        except InvalidSession as e:
+            raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
+                                detail=f"Invalid session for: {e.session_email}")
 
         return SessionResponse(hints=list(se.game_data.contains),
                                partial_word=se.game_data.partial,

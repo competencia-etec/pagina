@@ -39,3 +39,5 @@ class SessionResponse(BaseModel):
     turn_status: TurnStatus
     player_x: int
     player_y: int
+    # Facing the player should start looking at (1=Up, 2=Right, 3=Down, 4=Left)
+    initial_facing: int

@@ -69,6 +69,11 @@ export async function fetchWithAuth(path, options = {}) {
     throw new Error('Unauthorized')
   }
 
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ detail: 'Error' }))
+    throw new Error(errorData.detail || `HTTP ${res.status}`)
+  }
+
   return res
 }
 

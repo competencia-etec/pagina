@@ -18,6 +18,11 @@ class MazeGameData:
             start_cell = (self.m.w - 1, self.m.h - 1)
         self.playerX, self.playerY = start_cell
         self.playerWon = (self.playerX, self.playerY) == (self.m.originX, self.m.originY)
+        # Initial facing: first open direction (1=Up, 2=Right, 3=Down, 4=Left)
+        self.initialFacing = next(
+            (d for d in (1, 2, 3, 4) if not self._getCellWall(self.playerX, self.playerY, d)),
+            1,
+        )
 
     def _tracePath(self, x: int, y: int) -> int:
         assert 0 <= y < self.m.h
