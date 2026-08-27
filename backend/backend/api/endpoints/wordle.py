@@ -60,6 +60,9 @@ def add_endpoints(router):
                            attempts_remaining=gd.guesses,
                            prev_attempts=gd.prevGuesses)
 
+        if gd.playerWon:
+            ss.finish_session(current_user.email)
+
         return gs
 
     @router.get("/wordle/get_game/", tags=["wordle"])

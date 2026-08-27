@@ -57,6 +57,9 @@ def add_endpoints(router):
         game_status = 'won' if gd.playerWon else 'in_progress'
         turn_status = gd.get_turn_status()
 
+        if gd.playerWon:
+            ms.finish_session(current_user.email)
+
         return MoveResponse(game_status=game_status,
                             turn_status=turn_status,
                             move_valid=move_valid)
