@@ -64,6 +64,16 @@ def add_endpoints(router):
                             turn_status=turn_status,
                             move_valid=move_valid)
 
+    @router.post("/maze/finish/", tags=["maze"])
+    async def maze_finish_game(
+        current_user: Annotated[User, Depends(get_current_active_user)],
+    ) -> dict:
+        """Terminates the maze session for the current user"""
+
+        ms = MazeSessionSystem()
+        ms.finish_session(current_user.email)
+        return {"detail": "Session finished"}
+
     @router.get("/maze/get_game/", tags=["maze"])
     async def maze_get_game(
         current_user: Annotated[User, Depends(get_current_active_user)],
@@ -86,4 +96,5 @@ def add_endpoints(router):
                                game_status=game_status,
                                turn_status=turn_status,
                                player_x=gd.playerX,
-                               player_y=gd.playerY)
+                               player_y=gd.playerY,
+                               initial_facing=gd.initialFacing)

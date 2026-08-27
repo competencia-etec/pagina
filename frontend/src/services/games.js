@@ -29,6 +29,11 @@ export async function startMaze(difficulty = 1) {
   return res.json()
 }
 
+// Returns true if the error is the backend's 406 "session already exists"
+function isSessionAlreadyCreated(err) {
+  return err instanceof Error && /already created/i.test(err.message)
+}
+
 export async function moveMaze(direction) {
   const res = await fetchWithAuth('/maze/move/', {
     method: 'POST',
@@ -42,5 +47,10 @@ export async function getMazeGame() {
   const res = await fetchWithAuth('/maze/get_game/', {
     headers: { Accept: 'application/json' },
   })
+  return res.json()
+}
+
+export async function finishMaze() {
+  const res = await fetchWithAuth('/maze/finish/', { method: 'POST' })
   return res.json()
 }
