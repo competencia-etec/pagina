@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext.jsx'
-import { startMaze, moveMaze, getMazeGame, finishMaze } from '../../services/games.js'
+import { startMaze, moveMaze, getMazeGame, finishMaze, isSessionAlreadyCreated } from '../../services/games.js'
 import noneImg from '../../assets/maze/none.png'
 import blockedImg from '../../assets/maze/blocked.png'
 import frontImg from '../../assets/maze/front.png'
