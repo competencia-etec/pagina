@@ -3,9 +3,9 @@ from pydantic import BaseModel, EmailStr
 
 
 class GoogleOAuthResponse(BaseModel):
-    id: int
+    id: str
     email: EmailStr
     name: str
-    given_name: str
-    family_name: str
-    picture: str
+    given_name: str | None = None
+    family_name: str | None = None
+    picture: str | None = None
