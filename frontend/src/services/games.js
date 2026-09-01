@@ -30,7 +30,7 @@ export async function startMaze(difficulty = 1) {
 }
 
 // Returns true if the error is the backend's 406 "session already exists"
-function isSessionAlreadyCreated(err) {
+export function isSessionAlreadyCreated(err) {
   return err instanceof Error && /already created/i.test(err.message)
 }
 
