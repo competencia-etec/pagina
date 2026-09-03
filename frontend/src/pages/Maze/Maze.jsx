@@ -10,6 +10,7 @@ import frontLeftImg from '../../assets/maze/front_left.png'
 import frontRightImg from '../../assets/maze/front_right.png'
 import leftRightImg from '../../assets/maze/left_right.png'
 import Compass from './Compass.jsx'
+import MiniMap from './MiniMap.jsx'
 import './Maze.css'
 
 // Facing: 0=Up, 1=Right, 2=Down, 3=Left
@@ -186,6 +187,15 @@ export default function Maze({ onGoHome }) {
             <img src={viewImage} alt="Vista del laberinto" className="maze-view-img" />
           </div>
           <div className="maze-side">
+            <p className="maze-side-label">Posición</p>
+            <MiniMap
+              playerX={game.player_x}
+              playerY={game.player_y}
+              exitX={game.exit_x}
+              exitY={game.exit_y}
+              mazeW={game.maze_w}
+              mazeH={game.maze_h}
+            />
             <p className="maze-side-label">Brújula</p>
             <Compass
               playerX={game.player_x}

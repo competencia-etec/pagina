@@ -44,3 +44,6 @@ class SessionResponse(BaseModel):
     # Exit cell (maze origin) so the frontend compass can point at it
     exit_x: int
     exit_y: int
+    # Total maze size so the frontend minimap can scale the whole grid
+    maze_w: int
+    maze_h: int

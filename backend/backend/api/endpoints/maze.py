@@ -99,4 +99,6 @@ def add_endpoints(router):
                                player_y=gd.playerY,
                                initial_facing=gd.initialFacing,
                                exit_x=gd.m.originX,
-                               exit_y=gd.m.originY)
+                               exit_y=gd.m.originY,
+                               maze_w=gd.m.w,
+                               maze_h=gd.m.h)
