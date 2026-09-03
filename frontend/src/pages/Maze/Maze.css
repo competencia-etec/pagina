@@ -62,6 +62,57 @@
   font-size: 16px;
   color: var(--muted);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.maze-badge {
+  display: inline-block;
+  padding: 4px 16px;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--navy);
+  border-radius: 999px;
+}
+
+.maze-badge-win {
+  background: #2ecc71;
+}
+
+.maze-pos {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.maze-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.maze-header h1 {
+  margin: 0;
+  font-family: var(--mono);
+  color: var(--navy);
+}
+
+.maze-btn-back {
+  position: absolute;
+  left: 0;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  padding: 8px 14px;
+  font-size: 14px;
 }
 
 .maze-controls {
@@ -121,6 +172,37 @@
   min-width: 72px;
   font-size: 30px;
   padding: 0;
+  position: relative;
+}
+
+/* ---------- D-pad ---------- */
+.maze-dpad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.maze-dpad-row {
+  display: flex;
+  gap: 12px;
+}
+
+.maze-keyhint {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.maze-btn-icon:active:not(:disabled) {
+  transform: scale(0.92);
+  background: var(--navy);
+  color: var(--white);
 }
 
 .maze-win-overlay {
@@ -150,4 +232,80 @@
   font-family: var(--mono);
   color: var(--navy);
   font-size: 28px;
+}
+
+/* ---------- MiniMap (fog of war) ---------- */
+.maze-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.maze-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding-top: 4px;
+}
+
+.maze-side-label {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mm-grid {
+  display: inline-grid;
+  --mm-size: 18px;
+  --mm-wall: #101a36;      /* darkest band: solid wall */
+  --mm-fog-bg: #8996ae;    /* medium band: undiscovered */
+  --mm-wall-w: 2px;
+  gap: 0;
+  padding: 8px;
+  background: #16233d;     /* panel: slightly lighter than walls, behind fog */
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  pointer-events: none;    /* don't block clicks behind it */
+  justify-content: center;
+}
+
+.mm-cell {
+  width: var(--mm-size);
+  height: var(--mm-size);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* floor: you visited and it was open */
+.mm-explored {
+  background: var(--white); /* #f5f7ff - lightest band */
+}
+
+/* fog: undiscovered - solid medium slate, NOT dark navy */
+.mm-fog {
+  background: var(--mm-fog-bg);
+  border: none !important;
+}
+
+/* player: bright accent so it never blends with floor/wall */
+.mm-player {
+  background: #f0a020; /* amber/gold */
+}
+
+.mm-arrow {
+  color: #0b1437;        /* navy arrow on the gold dot */
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
 }

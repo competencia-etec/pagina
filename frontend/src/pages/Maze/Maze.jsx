@@ -9,6 +9,7 @@ import rightImg from '../../assets/maze/right.png'
 import frontLeftImg from '../../assets/maze/front_left.png'
 import frontRightImg from '../../assets/maze/front_right.png'
 import leftRightImg from '../../assets/maze/left_right.png'
+import MiniMap from './MiniMap.jsx'
 import './Maze.css'
 
 // Facing: 0=Up, 1=Right, 2=Down, 3=Left
@@ -20,6 +21,18 @@ export default function Maze({ onGoHome }) {
   const [message, setMessage] = useState('')
   const [facing, setFacing] = useState(FACING.UP)
   const [won, setWon] = useState(false)
+  // Fog-of-war minimap: key "x,y" -> [up, down, right, left] open booleans
+  const [explored, setExplored] = useState({})
+
+  // Record the current cell's wall/open info into the explored map.
+  const recordCell = (g) => {
+    if (!g?.turn_status?.possible_movements) return
+    const key = `${g.player_x},${g.player_y}`
+    setExplored((prev) => {
+      if (prev[key]) return prev // already known, avoid re-render loops
+      return { ...prev, [key]: g.turn_status.possible_movements }
+    })
+  }
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -44,6 +57,7 @@ export default function Maze({ onGoHome }) {
         const g = await getMazeGame()
         if (!cancelled) {
           setGame(g)
+          recordCell(g)
           applyInitialFacing(g)
           if (g.game_status === 'won') setWon(true)
         }
@@ -61,6 +75,7 @@ export default function Maze({ onGoHome }) {
           const g = await getMazeGame()
           if (!cancelled) {
             setGame(g)
+            recordCell(g)
             applyInitialFacing(g)
           }
         } catch {
@@ -85,6 +100,7 @@ export default function Maze({ onGoHome }) {
       await moveMaze(absDir)
       const updated = await getMazeGame()
       setGame(updated)
+      recordCell(updated)
       if (updated.game_status === 'won') {
         setWon(true)
       }
@@ -96,6 +112,34 @@ export default function Maze({ onGoHome }) {
   const handleRotate = (delta) => {
     setFacing((prev) => (prev + delta + 4) % 4)
   }
+
+  // WASD + arrow-key controls: W/S forward-back, A/D rotate (arrows symmetric).
+  useEffect(() => {
+    if (!game || won) return
+
+    const onKey = (e) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      const k = e.key.length === 1 ? e.key.toUpperCase() : e.key
+      const map = {
+        ArrowUp: () => handleMove(0),
+        W: () => handleMove(0),
+        ArrowDown: () => handleMove(2),
+        S: () => handleMove(2),
+        ArrowLeft: () => handleRotate(-1),
+        A: () => handleRotate(-1),
+        ArrowRight: () => handleRotate(1),
+        D: () => handleRotate(1),
+      }
+      if (map[k]) {
+        e.preventDefault()
+        map[k]()
+      }
+    }
+
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game, facing, won])
 
   if (loading || !isAuthenticated) {
     return <div className="auth-card">Cargando...</div>
@@ -143,24 +187,46 @@ export default function Maze({ onGoHome }) {
   const openFront = !!absMoves[dirToIdx[frontDir]]
   const openRight = !!absMoves[dirToIdx[rightDir]]
   const openLeft = !!absMoves[dirToIdx[leftDir]]
+  const openBack = !!absMoves[dirToIdx[((facing + 2) % 4) + 1]]
 
   return (
     <div className="maze-container">
-      <h1>Laberinto</h1>
-      <button onClick={onGoHome}>Volver</button>
+      <div className="maze-header">
+        <button className="maze-btn maze-btn-back" onClick={onGoHome}>← Volver</button>
+        <h1>Laberinto</h1>
+      </div>
       <div className="maze-view">
-        <div className="maze-view-frame">
-          <img src={viewImage} alt="Vista del laberinto" className="maze-view-img" />
+        <div className="maze-main">
+          <div className="maze-view-frame">
+            <img src={viewImage} alt="Vista del laberinto" className="maze-view-img" />
+          </div>
+          <div className="maze-side">
+            <p className="maze-side-label">Mapa</p>
+            <MiniMap explored={explored} playerX={game.player_x} playerY={game.player_y} facing={facing} />
+          </div>
         </div>
         <div className="maze-info">
-          <p>Posición: ({game.player_x}, {game.player_y})</p>
-          <p>Estado: {game.game_status}</p>
+          <span className={`maze-badge ${won ? 'maze-badge-win' : ''}`}>
+            {won ? '¡Encontraste la salida!' : 'Explorando'}
+          </span>
+          <p className="maze-pos">({game.player_x}, {game.player_y})</p>
         </div>
         <div className="maze-controls">
-          <button className="maze-btn" onClick={() => handleMove(0)} disabled={!openFront}>↑</button>
-          <div className="maze-controls-row">
-            <button className="maze-btn maze-btn-icon" onClick={() => handleRotate(-1)}>←</button>
-            <button className="maze-btn maze-btn-icon" onClick={() => handleRotate(1)}>→</button>
+          <div className="maze-dpad">
+            <button className="maze-btn maze-btn-icon maze-dpad-up" onClick={() => handleMove(0)} disabled={!openFront}>
+              ↑<span className="maze-keyhint">W</span>
+            </button>
+            <div className="maze-dpad-row">
+              <button className="maze-btn maze-btn-icon maze-dpad-left" onClick={() => handleRotate(-1)}>
+                ←<span className="maze-keyhint">A</span>
+              </button>
+              <button className="maze-btn maze-btn-icon maze-dpad-down" onClick={() => handleMove(2)} disabled={!openBack}>
+                ↓<span className="maze-keyhint">S</span>
+              </button>
+              <button className="maze-btn maze-btn-icon maze-dpad-right" onClick={() => handleRotate(1)}>
+                →<span className="maze-keyhint">D</span>
+              </button>
+            </div>
           </div>
         </div>
         {message && <p className="maze-info">{message}</p>}
