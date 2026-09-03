@@ -19,6 +19,9 @@ services:
     build:
       context: ./frontend
       dockerfile: dockerfile
+
+    environment:
+      - ARG VITE_GOOGLE_OAUTH_URL= ${VITE_GOOGLE_OAUTH_URL:?API_URL must be set}
     ports:
       - "80:80"
     depends_on:
