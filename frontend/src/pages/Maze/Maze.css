@@ -263,49 +263,75 @@
   color: var(--muted);
 }
 
-.mm-grid {
-  display: inline-grid;
-  --mm-size: 18px;
-  --mm-wall: #101a36;      /* darkest band: solid wall */
-  --mm-fog-bg: #8996ae;    /* medium band: undiscovered */
-  --mm-wall-w: 2px;
-  gap: 0;
-  padding: 8px;
-  background: #16233d;     /* panel: slightly lighter than walls, behind fog */
-  border-radius: 8px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
-  pointer-events: none;    /* don't block clicks behind it */
-  justify-content: center;
-}
-
-.mm-cell {
-  width: var(--mm-size);
-  height: var(--mm-size);
-  box-sizing: border-box;
+/* ---------- Compass (points at the exit) ---------- */
+.compass {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  background: #16233d;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
 }
 
-/* floor: you visited and it was open */
-.mm-explored {
-  background: var(--white); /* #f5f7ff - lightest band */
+.compass-ring {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #1e2c4a 0%, #101a36 120%);
+  border: 3px solid var(--navy);
 }
 
-/* fog: undiscovered - solid medium slate, NOT dark navy */
-.mm-fog {
-  background: var(--mm-fog-bg);
-  border: none !important;
-}
-
-/* player: bright accent so it never blends with floor/wall */
-.mm-player {
-  background: #f0a020; /* amber/gold */
-}
-
-.mm-arrow {
-  color: #0b1437;        /* navy arrow on the gold dot */
-  font-size: 14px;
+.compass-card {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 11px;
   font-weight: 700;
-  line-height: 1;
+  color: var(--muted);
+}
+
+.compass-n { top: 3px; left: 50%; transform: translateX(-50%); }
+.compass-e { right: 4px; top: 50%; transform: translateY(-50%); }
+.compass-s { bottom: 3px; left: 50%; transform: translateX(-50%); }
+.compass-w { left: 4px; top: 50%; transform: translateY(-50%); }
+
+.compass-needle {
+  position: absolute;
+  top: 26px;
+  left: 44px;
+  width: 8px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: center 22px;
+  transition: transform 0.25s ease;
+}
+
+.compass-needle-head {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 14px solid #f0a020; /* amber, points at exit */
+}
+
+.compass-needle-tail {
+  width: 4px;
+  height: 26px;
+  background: #f0a020;
+  opacity: 0.55;
+  border-radius: 2px;
+}
+
+.compass-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--white);
 }

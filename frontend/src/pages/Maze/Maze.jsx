@@ -9,7 +9,7 @@ import rightImg from '../../assets/maze/right.png'
 import frontLeftImg from '../../assets/maze/front_left.png'
 import frontRightImg from '../../assets/maze/front_right.png'
 import leftRightImg from '../../assets/maze/left_right.png'
-import MiniMap from './MiniMap.jsx'
+import Compass from './Compass.jsx'
 import './Maze.css'
 
 // Facing: 0=Up, 1=Right, 2=Down, 3=Left
@@ -21,18 +21,6 @@ export default function Maze({ onGoHome }) {
   const [message, setMessage] = useState('')
   const [facing, setFacing] = useState(FACING.UP)
   const [won, setWon] = useState(false)
-  // Fog-of-war minimap: key "x,y" -> [up, down, right, left] open booleans
-  const [explored, setExplored] = useState({})
-
-  // Record the current cell's wall/open info into the explored map.
-  const recordCell = (g) => {
-    if (!g?.turn_status?.possible_movements) return
-    const key = `${g.player_x},${g.player_y}`
-    setExplored((prev) => {
-      if (prev[key]) return prev // already known, avoid re-render loops
-      return { ...prev, [key]: g.turn_status.possible_movements }
-    })
-  }
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -57,7 +45,6 @@ export default function Maze({ onGoHome }) {
         const g = await getMazeGame()
         if (!cancelled) {
           setGame(g)
-          recordCell(g)
           applyInitialFacing(g)
           if (g.game_status === 'won') setWon(true)
         }
@@ -75,7 +62,6 @@ export default function Maze({ onGoHome }) {
           const g = await getMazeGame()
           if (!cancelled) {
             setGame(g)
-            recordCell(g)
             applyInitialFacing(g)
           }
         } catch {
@@ -100,7 +86,6 @@ export default function Maze({ onGoHome }) {
       await moveMaze(absDir)
       const updated = await getMazeGame()
       setGame(updated)
-      recordCell(updated)
       if (updated.game_status === 'won') {
         setWon(true)
       }
@@ -201,8 +186,15 @@ export default function Maze({ onGoHome }) {
             <img src={viewImage} alt="Vista del laberinto" className="maze-view-img" />
           </div>
           <div className="maze-side">
-            <p className="maze-side-label">Mapa</p>
-            <MiniMap explored={explored} playerX={game.player_x} playerY={game.player_y} facing={facing} />
+            <p className="maze-side-label">Brújula</p>
+            <Compass
+              playerX={game.player_x}
+              playerY={game.player_y}
+              exitX={game.exit_x}
+              exitY={game.exit_y}
+              facing={facing}
+              won={won}
+            />
           </div>
         </div>
         <div className="maze-info">
