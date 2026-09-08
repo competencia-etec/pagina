@@ -1,5 +1,6 @@
 import urllib.parse
 
+from fastapi import HTTPException
 from fastapi.responses import RedirectResponse
 
 from backend.core.config import EnviromentConfig
@@ -7,6 +8,8 @@ from backend.models import oauth_response
 from backend.models.user import CreateUser, Token, User
 from backend.services.oauth_service import create_access_token, oauth_callback
 from backend.services.user_service import create_user, get_user_by_email
+
+import re
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -32,6 +35,11 @@ def add_endpoints(router):
         oauth_user: oauth_response.GoogleOAuthResponse = oauth_callback(code)
 
         env = EnviromentConfig()
+
+        pattern = re.compile("^[a-zA-Z0-9._%+-]+@alumno\.etec\.um\.edu\.ar$")
+        if not pattern.match(oauth_user.email):
+            raise HTTPException(
+                401, "Invalid email, only `alumno.etec.um.edu.ar` hosts are accepted")
 
         user: User | None = get_user_by_email(oauth_user.email)
 
