@@ -1,7 +1,7 @@
 import { GoogleIcon } from '../../components/GoogleIcon/GoogleIcon.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 
-const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/auth/login_oauth'
+const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/login_oauth'
 
 function handleGoogleLogin() {
   window.location.href = GOOGLE_OAUTH_URL
