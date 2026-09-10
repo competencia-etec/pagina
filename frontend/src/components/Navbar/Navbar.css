@@ -40,6 +40,19 @@
   color: var(--white);
 }
 
+.btn-nav--ghost {
+  background: transparent;
+  border: 2px solid transparent;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.btn-nav--ghost:hover {
+  background: var(--navy);
+  color: var(--white);
+  opacity: 1;
+}
+
 .btn-nav--primary {
   background: var(--navy);
   color: var(--white);

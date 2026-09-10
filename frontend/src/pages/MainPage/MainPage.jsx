@@ -17,6 +17,7 @@ const LEADERBOARD = [
 const GAMES = [
   { id: 'wordle', title: 'Wordle', description: 'Tenés 6 intentos para adivinar la palabra del día.', icon: '🇼' },
   { id: 'maze', title: 'Laberinto', description: 'Encontrá la salida antes que el tiempo.', icon: '🧭' },
+  { id: 'strands', title: 'Strands', description: 'Conectá las letras para encontrar las palabras ocultas.', icon: '🧶' },
 ]
 
 export default function MainPage({ onGoLogin, onGoRegister, onLogout, user, setPage }) {

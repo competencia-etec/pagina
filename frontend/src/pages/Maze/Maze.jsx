@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { startMaze, moveMaze, getMazeGame, finishMaze, isSessionAlreadyCreated } from '../../services/games.js'
+import Navbar from '../../components/Navbar/Navbar.jsx'
 import noneImg from '../../assets/maze/none.png'
 import blockedImg from '../../assets/maze/blocked.png'
 import frontImg from '../../assets/maze/front.png'
@@ -16,7 +17,10 @@ import './Maze.css'
 // Facing: 0=Up, 1=Right, 2=Down, 3=Left
 const FACING = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3 }
 
-export default function Maze({ onGoHome }) {
+export default function Maze({
+  onGoLogin, onGoRegister, onLogout, onGoHome, user,
+}) {
+  const isLoggedIn = !!user
   const { isAuthenticated, loading, login } = useAuth()
   const [game, setGame] = useState(null)
   const [message, setMessage] = useState('')
@@ -84,12 +88,13 @@ export default function Maze({ onGoHome }) {
     if (!game) return
     try {
       const absDir = getAbsoluteDirection(relativeDir)
-      await moveMaze(absDir)
+      const res = await moveMaze(absDir)
+      if (res.game_status === 'won') {
+        setWon(true)
+        return
+      }
       const updated = await getMazeGame()
       setGame(updated)
-      if (updated.game_status === 'won') {
-        setWon(true)
-      }
     } catch (err) {
       setMessage('Error al mover')
     }
@@ -176,11 +181,16 @@ export default function Maze({ onGoHome }) {
   const openBack = !!absMoves[dirToIdx[((facing + 2) % 4) + 1]]
 
   return (
-    <div className="maze-container">
-      <div className="maze-header">
-        <button className="maze-btn maze-btn-back" onClick={onGoHome}>← Volver</button>
-        <h1>Laberinto</h1>
-      </div>
+    <div className="main-page" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
+      <Navbar
+        isLoggedIn={isLoggedIn}
+        user={user}
+        onLogout={onLogout}
+        onGoLogin={onGoLogin}
+        onGoRegister={onGoRegister}
+        onGoHome={onGoHome}
+      />
+      <h1 style={{ marginTop: -8, marginBottom: 8, fontFamily: 'var(--mono)', color: 'var(--navy)' }}>Laberinto</h1>
       <div className="maze-view">
         <div className="maze-main">
           <div className="maze-view-frame">

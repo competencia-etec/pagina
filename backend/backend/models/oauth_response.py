@@ -7,5 +7,5 @@ class GoogleOAuthResponse(BaseModel):
     email: EmailStr
     name: str
     given_name: str
-    family_name: str
+    family_name: str = ""
     picture: str
