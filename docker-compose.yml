@@ -28,3 +28,15 @@ services:
       - "80:80"
     depends_on:
       - backend
+
+  traefik:
+    image: traefik:v3.7
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:70"
+    ports:
+      - "70:70"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
