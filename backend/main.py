@@ -8,6 +8,8 @@ from backend.api.endpoints.wordle import add_endpoints as add_wordle_endpoint
 from backend.core.config import EnviromentConfig
 from backend.services.database import DatabaseConnection
 
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 router = APIRouter()
@@ -21,6 +23,21 @@ db = DatabaseConnection()
 # db.init("sqlite+pysqlite:///:memory:", True)
 db.init("sqlite:///foo.db", True)
 
+# CORS
+
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 auth_router = APIRouter()
 user_router = APIRouter(prefix="/user")

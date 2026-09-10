@@ -33,6 +33,7 @@ def add_endpoints(router):
     async def callback(code: str):
         """Callback for oauth loggin"""
         oauth_user: oauth_response.GoogleOAuthResponse = oauth_callback(code)
+        env = EnviromentConfig()
 
         env = EnviromentConfig()
 
@@ -54,5 +55,4 @@ def add_endpoints(router):
 
         tk = create_access_token({"sub": user.email})
 
-        return RedirectResponse(
-            f"{env.get_config_var("FRONTEND_CALLBACK_URL")}?token={tk}")
+        return RedirectResponse(f"{env.get_config_var("FRONTEND_CALLBACK_URL ")}?token={tk}")
