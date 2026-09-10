@@ -55,4 +55,4 @@ def add_endpoints(router):
 
         tk = create_access_token({"sub": user.email})
 
-        return RedirectResponse(f"{env.get_config_var("FRONTEND_CALLBACK_URL ")}?token={tk}")
+        return RedirectResponse(f"{env.get_config_var("FRONTEND_CALLBACK_URL")}?token={tk}")
