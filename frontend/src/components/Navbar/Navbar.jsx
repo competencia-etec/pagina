@@ -1,6 +1,6 @@
 import './Navbar.css'
 
-export default function Navbar({ isLoggedIn, user, onLogout, onGoLogin, onGoRegister }) {
+export default function Navbar({ isLoggedIn, user, onLogout, onGoLogin, onGoRegister, onGoHome }) {
   return (
     <nav className="main-nav">
       <div className="logo">
@@ -12,6 +12,9 @@ export default function Navbar({ isLoggedIn, user, onLogout, onGoLogin, onGoRegi
         {isLoggedIn ? (
           <>
             <span className="nav-user">{user?.name}</span>
+            <button id="btn-nav-home" className="btn-nav btn-nav--ghost" onClick={onGoHome}>
+              Volver
+            </button>
             <button id="btn-logout" className="btn-nav" onClick={onLogout}>
               Cerrar sesión
             </button>
