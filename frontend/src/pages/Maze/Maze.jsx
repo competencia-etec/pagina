@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { startMaze, moveMaze, getMazeGame, finishMaze, isSessionAlreadyCreated } from '../../services/games.js'
+import { showToast } from '../../services/auth.js'
 import Navbar from '../../components/Navbar/Navbar.jsx'
 import noneImg from '../../assets/maze/none.png'
 import blockedImg from '../../assets/maze/blocked.png'
@@ -23,9 +24,16 @@ export default function Maze({
   const isLoggedIn = !!user
   const { isAuthenticated, loading, login } = useAuth()
   const [game, setGame] = useState(null)
-  const [message, setMessage] = useState('')
+  const [loadError, setLoadError] = useState('')
   const [facing, setFacing] = useState(FACING.UP)
   const [won, setWon] = useState(false)
+  const [moves, setMoves] = useState(0)
+  const [moving, setMoving] = useState(false)
+  const [bump, setBump] = useState(null) // 'front' | 'back' | null
+  const [replaying, setReplaying] = useState(false)
+  const moveLock = useRef(false)
+
+  const FACING_LABEL = ['Norte', 'Este', 'Sur', 'Oeste']
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -51,6 +59,7 @@ export default function Maze({
         if (!cancelled) {
           setGame(g)
           applyInitialFacing(g)
+          setLoadError('')
           if (g.game_status === 'won') setWon(true)
         }
       } catch {
@@ -59,7 +68,7 @@ export default function Maze({
           await startMaze()
         } catch (err) {
           if (!isSessionAlreadyCreated(err)) {
-            if (!cancelled) setMessage('Error al iniciar laberinto')
+            if (!cancelled) setLoadError('No pudimos abrir el laberinto. Revisá tu conexión e intentá de nuevo.')
             return
           }
         }
@@ -68,9 +77,10 @@ export default function Maze({
           if (!cancelled) {
             setGame(g)
             applyInitialFacing(g)
+            setLoadError('')
           }
         } catch {
-          if (!cancelled) setMessage('Error al iniciar laberinto')
+          if (!cancelled) setLoadError('No pudimos abrir el laberinto. Revisá tu conexión e intentá de nuevo.')
         }
       }
     }
@@ -84,19 +94,64 @@ export default function Maze({
     return ((facing + relativeDir) % 4) + 1 // Backend: 1=Up, 2=Right, 3=Down, 4=Left
   }
 
+  const flashBump = (side) => {
+    setBump(side)
+    window.clearTimeout(flashBump._t)
+    flashBump._t = window.setTimeout(() => setBump(null), 280)
+  }
+
   const handleMove = async (relativeDir) => {
-    if (!game) return
+    if (!game || won || moveLock.current) return
+    const absDir = getAbsoluteDirection(relativeDir)
+    // Optimistic wall feedback even before the server answers
+    const dirToIdxLocal = { 1: 0, 2: 2, 3: 1, 4: 3 }
+    const absMovesLocal = game.turn_status?.possible_movements
+    if (Array.isArray(absMovesLocal) && !absMovesLocal[dirToIdxLocal[absDir]]) {
+      flashBump(relativeDir === 2 ? 'back' : 'front')
+      return
+    }
+    moveLock.current = true
+    setMoving(true)
     try {
-      const absDir = getAbsoluteDirection(relativeDir)
       const res = await moveMaze(absDir)
       if (res.game_status === 'won') {
+        setMoves((m) => m + 1)
         setWon(true)
+        return
+      }
+      if (res.move_valid === false) {
+        flashBump(relativeDir === 2 ? 'back' : 'front')
         return
       }
       const updated = await getMazeGame()
       setGame(updated)
-    } catch (err) {
-      setMessage('Error al mover')
+      setMoves((m) => m + 1)
+    } catch {
+      showToast('No pudimos moverte. Intentá de nuevo.', 'error')
+    } finally {
+      moveLock.current = false
+      setMoving(false)
+    }
+  }
+
+  const handleReplay = async () => {
+    if (replaying) return
+    setReplaying(true)
+    try {
+      try { await finishMaze() } catch { /* session may already be closed */ }
+      try { await startMaze() } catch (err) {
+        if (!isSessionAlreadyCreated(err)) throw err
+      }
+      const g = await getMazeGame()
+      setGame(g)
+      if (typeof g?.initial_facing === 'number') setFacing(g.initial_facing - 1)
+      setMoves(0)
+      setWon(false)
+      showToast('Nuevo laberinto listo. ¡A explorar!', 'success')
+    } catch {
+      showToast('No pudimos crear otro laberinto.', 'error')
+    } finally {
+      setReplaying(false)
     }
   }
 
@@ -133,7 +188,22 @@ export default function Maze({
   }, [game, facing, won])
 
   if (loading || !isAuthenticated) {
-    return <div className="auth-card">Cargando...</div>
+    return (
+      <div className="main-page">
+        <Navbar
+          isLoggedIn={isLoggedIn}
+          user={user}
+          onLogout={onLogout}
+          onGoLogin={onGoLogin}
+          onGoRegister={onGoRegister}
+          onGoHome={onGoHome}
+        />
+        <div className="maze-loading" role="status" aria-live="polite">
+          <div className="maze-loading-img" />
+          <p className="maze-loading-text">Cargando…</p>
+        </div>
+      </div>
+    )
   }
 
   const getViewImage = (movements, face) => {
@@ -164,7 +234,27 @@ export default function Maze({
   }
 
   if (!game) {
-    return <div className="auth-card">Cargando laberinto...</div>
+    return (
+      <div className="main-page">
+        <Navbar
+          isLoggedIn={isLoggedIn}
+          user={user}
+          onLogout={onLogout}
+          onGoLogin={onGoLogin}
+          onGoRegister={onGoRegister}
+          onGoHome={onGoHome}
+        />
+        <div className="maze-loading" role="status" aria-live="polite">
+          <div className="maze-loading-img" />
+          <p className="maze-loading-text">{loadError || 'Abriendo el laberinto…'}</p>
+          {loadError && (
+            <button className="maze-btn maze-btn-retry" onClick={() => window.location.reload()}>
+              Reintentar
+            </button>
+          )}
+        </div>
+      </div>
+    )
   }
 
   const viewImage = getViewImage(game.turn_status?.possible_movements, facing)
@@ -180,8 +270,13 @@ export default function Maze({
   const openLeft = !!absMoves[dirToIdx[leftDir]]
   const openBack = !!absMoves[dirToIdx[((facing + 2) % 4) + 1]]
 
+  const viewAlt = `Vista del laberinto mirando al ${FACING_LABEL[facing].toLowerCase()}: ` +
+    `${openFront ? 'abierto al frente' : 'pared al frente'}, ` +
+    `${openLeft ? 'abierto a la izquierda' : 'pared a la izquierda'}, ` +
+    `${openRight ? 'abierto a la derecha' : 'pared a la derecha'}`
+
   return (
-    <div className="main-page" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
+    <div className="main-page maze-page">
       <Navbar
         isLoggedIn={isLoggedIn}
         user={user}
@@ -189,74 +284,110 @@ export default function Maze({
         onGoLogin={onGoLogin}
         onGoRegister={onGoRegister}
         onGoHome={onGoHome}
+        eyebrow="Exploración en primera persona"
+        title="Laberinto"
       />
-      <h1 style={{ marginTop: -8, marginBottom: 8, fontFamily: 'var(--mono)', color: 'var(--navy)' }}>Laberinto</h1>
       <div className="maze-view">
         <div className="maze-main">
-          <div className="maze-view-frame">
-            <img src={viewImage} alt="Vista del laberinto" className="maze-view-img" />
+          <div className={`maze-view-frame${bump ? ` maze-bump-${bump}` : ''}${moving ? ' maze-moving' : ''}`}>
+            <img key={viewImage} src={viewImage} alt={viewAlt} className="maze-view-img maze-view-swap" />
           </div>
-          <div className="maze-side">
-            <p className="maze-side-label">Posición</p>
-            <MiniMap
-              playerX={game.player_x}
-              playerY={game.player_y}
-              exitX={game.exit_x}
-              exitY={game.exit_y}
-              mazeW={game.maze_w}
-              mazeH={game.maze_h}
-            />
-            <p className="maze-side-label">Brújula</p>
-            <Compass
-              playerX={game.player_x}
-              playerY={game.player_y}
-              exitX={game.exit_x}
-              exitY={game.exit_y}
-              facing={facing}
-              won={won}
-            />
-          </div>
+          <aside className="maze-side maze-hud" aria-label="Instrumentos">
+            <div className="maze-hud-cell">
+              <p className="maze-side-label">Posición</p>
+              <MiniMap
+                playerX={game.player_x}
+                playerY={game.player_y}
+                exitX={game.exit_x}
+                exitY={game.exit_y}
+                mazeW={game.maze_w}
+                mazeH={game.maze_h}
+              />
+            </div>
+            <div className="maze-hud-cell">
+              <p className="maze-side-label">Brújula</p>
+              <Compass
+                playerX={game.player_x}
+                playerY={game.player_y}
+                exitX={game.exit_x}
+                exitY={game.exit_y}
+                facing={facing}
+                won={won}
+              />
+            </div>
+          </aside>
         </div>
         <div className="maze-info">
           <span className={`maze-badge ${won ? 'maze-badge-win' : ''}`}>
             {won ? '¡Encontraste la salida!' : 'Explorando'}
           </span>
-          <p className="maze-pos">({game.player_x}, {game.player_y})</p>
+          <button className="maze-btn maze-btn-new" onClick={handleReplay} disabled={replaying}>
+            {replaying ? 'Creando…' : '↻ Nuevo laberinto'}
+          </button>
         </div>
         <div className="maze-controls">
-          <div className="maze-dpad">
-            <button className="maze-btn maze-btn-icon maze-dpad-up" onClick={() => handleMove(0)} disabled={!openFront}>
+          <div className="maze-dpad" role="group" aria-label="Controles de movimiento">
+            <button
+              className={`maze-btn maze-btn-icon maze-dpad-up${openFront ? '' : ' is-blocked'}`}
+              onClick={() => handleMove(0)}
+              aria-disabled={!openFront}
+              aria-label="Avanzar (W o flecha arriba)"
+              title={openFront ? 'Avanzar (W)' : 'Pared al frente'}
+            >
               ↑<span className="maze-keyhint">W</span>
             </button>
             <div className="maze-dpad-row">
-              <button className="maze-btn maze-btn-icon maze-dpad-left" onClick={() => handleRotate(-1)}>
-                ←<span className="maze-keyhint">A</span>
+              <button
+                className="maze-btn maze-btn-icon maze-dpad-left"
+                onClick={() => handleRotate(-1)}
+                aria-label="Girar a la izquierda (A o flecha izquierda)"
+                title="Girar a la izquierda (A)"
+              >
+                ↺<span className="maze-keyhint">A</span>
               </button>
-              <button className="maze-btn maze-btn-icon maze-dpad-down" onClick={() => handleMove(2)} disabled={!openBack}>
+              <button
+                className={`maze-btn maze-btn-icon maze-dpad-down${openBack ? '' : ' is-blocked'}`}
+                onClick={() => handleMove(2)}
+                aria-disabled={!openBack}
+                aria-label="Retroceder (S o flecha abajo)"
+                title={openBack ? 'Retroceder (S)' : 'Pared atrás'}
+              >
                 ↓<span className="maze-keyhint">S</span>
               </button>
-              <button className="maze-btn maze-btn-icon maze-dpad-right" onClick={() => handleRotate(1)}>
-                →<span className="maze-keyhint">D</span>
+              <button
+                className="maze-btn maze-btn-icon maze-dpad-right"
+                onClick={() => handleRotate(1)}
+                aria-label="Girar a la derecha (D o flecha derecha)"
+                title="Girar a la derecha (D)"
+              >
+                ↻<span className="maze-keyhint">D</span>
               </button>
             </div>
           </div>
+          <p className="maze-hint">W A S D o flechas para moverte</p>
         </div>
-        {message && <p className="maze-info">{message}</p>}
       </div>
       {won && (
-        <div className="maze-win-overlay">
+        <div className="maze-win-overlay" role="dialog" aria-modal="true" aria-label="Laberinto completado">
           <div className="maze-win-modal">
-            <h2>Lo lograste :o)</h2>
-            <button
-              className="maze-btn"
-              onClick={() => {
-                setWon(false)
-                finishMaze().catch(() => {})
-                onGoHome()
-              }}
-            >
-              Volver
-            </button>
+            <p className="maze-eyebrow">Laberinto completado</p>
+            <h2>¡Encontraste la salida!</h2>
+            <p className="maze-win-stats">Lo lograste en {moves} {moves === 1 ? 'paso' : 'pasos'}.</p>
+            <div className="maze-win-actions">
+              <button className="maze-btn maze-btn-primary" onClick={handleReplay} disabled={replaying}>
+                {replaying ? 'Creando…' : 'Jugar de nuevo'}
+              </button>
+              <button
+                className="maze-btn maze-btn-ghost"
+                onClick={() => {
+                  setWon(false)
+                  finishMaze().catch(() => {})
+                  onGoHome()
+                }}
+              >
+                Volver al inicio
+              </button>
+            </div>
           </div>
         </div>
       )}

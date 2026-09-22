@@ -1,11 +1,19 @@
 import './Navbar.css'
 
-export default function Navbar({ isLoggedIn, user, onLogout, onGoLogin, onGoRegister, onGoHome }) {
+export default function Navbar({ isLoggedIn, user, onLogout, onGoLogin, onGoRegister, onGoHome, eyebrow, title }) {
   return (
     <nav className="main-nav">
-      <div className="logo">
-        <span className="logo-comp">comp</span>
-        <span className="logo-etec">ETec</span>
+      <div className="nav-brand">
+        <div className="logo">
+          <span className="logo-comp">comp</span>
+          <span className="logo-etec">ETec</span>
+        </div>
+        {title && (
+          <div className="nav-page" aria-label={title}>
+            {eyebrow && <span className="nav-page-eyebrow">{eyebrow}</span>}
+            <span className="nav-page-title">{title}</span>
+          </div>
+        )}
       </div>
 
       <div className="nav-actions">
