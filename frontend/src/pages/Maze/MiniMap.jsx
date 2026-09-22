@@ -7,10 +7,12 @@ import './Maze.css'
 export default function MiniMap({ playerX, playerY, exitX, exitY, mazeW, mazeH }) {
   if (!mazeW || !mazeH) return null
 
-  const px = (playerX / mazeW) * 100 + '%'
-  const py = (playerY / mazeH) * 100 + '%'
-  const ex = (exitX / mazeW) * 100 + '%'
-  const ey = (exitY / mazeH) * 100 + '%'
+  // Clamp to [6%, 94%] so dots near the maze edge aren't half-clipped
+  const clamp01 = (v) => Math.min(0.94, Math.max(0.06, v))
+  const px = `${clamp01(playerX / mazeW) * 100}%`
+  const py = `${clamp01(playerY / mazeH) * 100}%`
+  const ex = `${clamp01(exitX / mazeW) * 100}%`
+  const ey = `${clamp01(exitY / mazeH) * 100}%`
 
   return (
     <div className="mm2" title="Vos y la salida">
