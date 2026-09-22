@@ -156,6 +156,7 @@ export default function Wordle({ onGoLogin, onGoRegister, onLogout, onGoHome, us
         onLogout={onLogout}
         onGoLogin={onGoLogin}
         onGoRegister={onGoRegister}
+        onGoHome={onGoHome}
       />
 
       <div className="wordle-container">

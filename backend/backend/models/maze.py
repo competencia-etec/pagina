@@ -41,3 +41,9 @@ class SessionResponse(BaseModel):
     player_y: int
     # Facing the player should start looking at (1=Up, 2=Right, 3=Down, 4=Left)
     initial_facing: int
+    # Exit cell (maze origin) so the frontend compass can point at it
+    exit_x: int
+    exit_y: int
+    # Total maze size so the frontend minimap can scale the whole grid
+    maze_w: int
+    maze_h: int

@@ -23,7 +23,6 @@ export function loginWithGoogle() {
 
 export function getToken() {
   const token = localStorage.getItem(TOKEN_KEY)
-  console.log('[getToken] Returning:', token ? token.substring(0, 30) + '...' : 'none')
   return token
 }
 

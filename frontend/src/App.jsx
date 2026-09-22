@@ -11,8 +11,24 @@ import './index.css'
 
 function AppContent() {
   const { user, isAuthenticated, loading, login, logout } = useAuth()
-  const [page, setPage] = useState('main')
+  const [page, setPage] = useState(() => {
+    // Restore page from localStorage on initial load
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('app_page')
+      if (saved && saved !== 'login' && saved !== 'register') {
+        return saved
+      }
+    }
+    return 'main'
+  })
   const [showCallback, setShowCallback] = useState(false)
+
+  // Persist page to localStorage when it changes (except auth pages)
+  useEffect(() => {
+    if (page !== 'login' && page !== 'register') {
+      localStorage.setItem('app_page', page)
+    }
+  }, [page])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -61,14 +77,33 @@ function AppContent() {
     )
   }
   if (page === 'strands') {
-    return <Strands onGoHome={() => setPage('main')} />
+    if (!isAuthenticated) {
+      return <LoginPage onGoHome={login} onGoRegister={login} />
+    }
+    return (
+      <Strands
+        onGoHome={() => setPage('main')}
+        user={user}
+        onLogout={() => setPage('main')}
+        onGoLogin={() => setPage('login')}
+        onGoRegister={() => setPage('register')}
+      />
+    )
   }
 
   if (page === 'maze') {
     if (!isAuthenticated) {
       return <LoginPage onGoHome={login} onGoRegister={login} />
     }
-    return <Maze onGoHome={() => setPage('main')} />
+    return (
+      <Maze
+        onGoLogin={() => setPage('login')}
+        onGoRegister={() => setPage('register')}
+        onLogout={() => setPage('main')}
+        onGoHome={() => setPage('main')}
+        user={user}
+      />
+    )
   }
 
   return (
