@@ -76,6 +76,14 @@ export async function fetchWithAuth(path, options = {}) {
   return res
 }
 
+export async function fetchWithAuthJson(path, options = {}) {
+  const res = await fetchWithAuth(path, options)
+  if (res.status === 406) {
+    throw new Error('Not acceptable')
+  }
+  return res.json()
+}
+
 export function storeToken(token) {
   localStorage.setItem(TOKEN_KEY, token)
 }
