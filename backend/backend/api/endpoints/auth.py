@@ -47,7 +47,7 @@ def add_endpoints(router):
         if user is None:
             creating_user = CreateUser(
                 username=oauth_user.name,
-                full_name=oauth_user.given_name + oauth_user.family_name,
+                full_name=(oauth_user.given_name or '') + (oauth_user.family_name or ''),
                 email=oauth_user.email,
                 disabled=False
             )

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.endpoints.auth import add_endpoints as add_auth_endpoints
 from backend.api.endpoints.maze import add_endpoints as add_maze_endpoints
@@ -12,11 +13,21 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 router = APIRouter()
 
 # Load env file
 config = EnviromentConfig()
-config.load_env_file()
+config.load_env_file("/home/slender/Projects/pagina/backend/.env")
 
 # Testing
 db = DatabaseConnection()
