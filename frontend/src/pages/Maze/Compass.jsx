@@ -17,9 +17,10 @@ export default function Compass({ playerX, playerY, exitX, exitY, facing, won })
     const dy = exitY - playerY
     if (dx !== 0 || dy !== 0) {
       const worldRad = Math.atan2(dx, -dy)
-      const facingRad = facing * (Math.PI / 2)
-      const relRad = worldRad - facingRad
-      deg = ((relRad * 180) / Math.PI + 180) % 360
+      const worldDeg = (worldRad * 180) / Math.PI
+      // Fixed world-aligned labels (N up, E right, S down, O left).
+      // Needle rest points down; rotate so it points at the exit in world space.
+      deg = (worldDeg + 360) % 360
     }
   }
 
