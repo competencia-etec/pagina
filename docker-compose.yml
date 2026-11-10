@@ -3,10 +3,35 @@ services:
     build:
       context: ./backend
       dockerfile: dockerfile
-    ports:
-      - "8000:8000"
-    env_file:              # FIXED: Use env_file to load a .env file
+    expose:
+      - "8000"
+    env_file:
       - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      # Direct port 8000 entrypoint (handles http://localhost:8000 and /oauth_callback)
+      - "traefik.http.routers.backend-direct.rule=HostRegexp(`.+`)"
+      - "traefik.http.routers.backend-direct.entrypoints=backend"
+      - "traefik.http.routers.backend-direct.service=backend"
+      # Subdomain routing (http/https://backend.docker.localhost)
+      - "traefik.http.routers.backend-http.rule=Host(`backend.docker.localhost`)"
+      - "traefik.http.routers.backend-http.entrypoints=web"
+      - "traefik.http.routers.backend-http.service=backend"
+      - "traefik.http.routers.backend-https.rule=Host(`backend.docker.localhost`)"
+      - "traefik.http.routers.backend-https.entrypoints=websecure"
+      - "traefik.http.routers.backend-https.tls=true"
+      - "traefik.http.routers.backend-https.service=backend"
+      # Path-based routing on localhost / frontend.docker.localhost
+      - "traefik.http.routers.backend-api-http.rule=PathPrefix(`/user`) || PathPrefix(`/wordle`) || PathPrefix(`/maze`) || PathPrefix(`/strands`) || PathPrefix(`/login_oauth`) || PathPrefix(`/oauth_callback`) || PathPrefix(`/docs`) || PathPrefix(`/openapi.json`)"
+      - "traefik.http.routers.backend-api-http.entrypoints=web"
+      - "traefik.http.routers.backend-api-http.priority=100"
+      - "traefik.http.routers.backend-api-http.service=backend"
+      - "traefik.http.routers.backend-api-https.rule=PathPrefix(`/user`) || PathPrefix(`/wordle`) || PathPrefix(`/maze`) || PathPrefix(`/strands`) || PathPrefix(`/login_oauth`) || PathPrefix(`/oauth_callback`) || PathPrefix(`/docs`) || PathPrefix(`/openapi.json`)"
+      - "traefik.http.routers.backend-api-https.entrypoints=websecure"
+      - "traefik.http.routers.backend-api-https.tls=true"
+      - "traefik.http.routers.backend-api-https.priority=100"
+      - "traefik.http.routers.backend-api-https.service=backend"
     develop:
       watch:
         - action: sync
@@ -21,22 +46,43 @@ services:
     build:
       context: ./frontend
       dockerfile: dockerfile
-      args:                # NEW: Pass variables to the Dockerfile build stage
+      args:
         VITE_API_BASE: ${VITE_API_BASE}
         VITE_GOOGLE_OAUTH_URL: ${VITE_GOOGLE_OAUTH_URL}
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.http.routers.frontend-http.rule=Host(`localhost`) || Host(`frontend.docker.localhost`) || Host(`pagina.docker.localhost`) || Host(`docker.localhost`)"
+      - "traefik.http.routers.frontend-http.entrypoints=web"
+      - "traefik.http.routers.frontend-http.priority=1"
+      - "traefik.http.routers.frontend-http.service=frontend"
+      - "traefik.http.routers.frontend-https.rule=Host(`localhost`) || Host(`frontend.docker.localhost`) || Host(`pagina.docker.localhost`) || Host(`docker.localhost`)"
+      - "traefik.http.routers.frontend-https.entrypoints=websecure"
+      - "traefik.http.routers.frontend-https.tls=true"
+      - "traefik.http.routers.frontend-https.priority=1"
+      - "traefik.http.routers.frontend-https.service=frontend"
 
   traefik:
     image: traefik:v3.7
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
-      - "--entrypoints.web.address=:70"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/dynamic"
+      - "--providers.file.watch=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.backend.address=:8000"
     ports:
-      - "70:70"
+      - "80:80"
+      - "443:443"
+      - "8000:8000"
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/certs:ro
+      - ./dynamic:/dynamic:ro
