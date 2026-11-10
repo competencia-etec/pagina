@@ -17,4 +17,4 @@ class EnviromentConfig():
         val = os.getenv(key)
         if val is None:
             raise RuntimeError(f"ENV varialbe {key} not found!")
-        return val
+        return val.strip()

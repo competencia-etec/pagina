@@ -11,19 +11,8 @@ from backend.api.endpoints.wordle import add_endpoints as add_wordle_endpoint
 from backend.core.config import EnviromentConfig
 from backend.services.database import DatabaseConnection
 
-from fastapi.middleware.cors import CORSMiddleware
-
 
 app = FastAPI()
-
-# CORS configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 router = APIRouter()
 
@@ -37,16 +26,20 @@ db = DatabaseConnection()
 db.init("sqlite:///foo.db", True)
 
 # CORS
-
 origins = [
     "http://localhost",
+    "https://localhost",
     "http://localhost:8080",
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://frontend.docker.localhost",
+    "https://frontend.docker.localhost",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"^https?://([a-zA-Z0-9-]+\.)*(docker\.)?localhost(:\d+)?$|^https?://127\.0\.0\.1(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,11 +52,13 @@ add_auth_endpoints(router)
 add_user_endpoints(router)
 add_wordle_endpoint(router)
 add_maze_endpoints(router)
+add_strands_endpoints(router)
 
 add_auth_endpoints(auth_router)
 add_user_endpoints(user_router)
 add_wordle_endpoint(game_router)
 add_maze_endpoints(game_router)
+add_strands_endpoints(game_router)
 
 app.include_router(auth_router)
 app.include_router(user_router)
