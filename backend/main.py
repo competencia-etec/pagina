@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -27,7 +29,7 @@ router = APIRouter()
 
 # Load env file
 config = EnviromentConfig()
-config.load_env_file("/home/slender/Projects/pagina/backend/.env")
+config.load_env_file(os.path.join(os.path.dirname(__file__), ".env"))
 
 # Testing
 db = DatabaseConnection()
