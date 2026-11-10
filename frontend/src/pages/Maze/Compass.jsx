@@ -19,7 +19,7 @@ export default function Compass({ playerX, playerY, exitX, exitY, facing, won })
       const worldRad = Math.atan2(dx, -dy)
       const facingRad = facing * (Math.PI / 2)
       const relRad = worldRad - facingRad
-      deg = (relRad * 180) / Math.PI
+      deg = ((relRad * 180) / Math.PI + 180) % 360
     }
   }
 
