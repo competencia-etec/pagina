@@ -89,6 +89,9 @@ def add_endpoints(router):
         game_status = 'won' if (gd.words and len(
             gd.revealed) == len(gd.words)) else 'in_progress'
 
+        if game_status == 'won':
+            ss.finish_session(current_user.email)
+
         return AttemptResponse(
             valid=res["valid"],
             word=res.get("word"),

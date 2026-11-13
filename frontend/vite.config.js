@@ -22,6 +22,10 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
+      '/strands': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
 })
