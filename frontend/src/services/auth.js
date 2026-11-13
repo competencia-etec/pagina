@@ -17,7 +17,7 @@ export function showToast(message, type = 'info') {
 }
 
 export function loginWithGoogle() {
-  const url = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/auth/login_oauth'
+  const url = import.meta.env.VITE_GOOGLE_OAUTH_URL || '/auth/login_oauth'
   window.location.href = url
 }
 

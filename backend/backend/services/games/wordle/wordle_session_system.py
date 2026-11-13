@@ -15,11 +15,13 @@ class SessionEntry:
 class WordleSessionSystem:
     _instance = None
     _sessions: dict[str, SessionEntry]
+    _play_counts: dict[str, int]
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._sessions = {}
+            cls._play_counts = {}
         return cls._instance
 
     def new_session(self, user_email: str) -> SessionEntry:
@@ -27,15 +29,18 @@ class WordleSessionSystem:
 
         assert (self._instance)
 
-        new_game_data = startGame()
+        if self._sessions.get(user_email) is not None:
+            raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
+                                detail="Session already created for this user")
+
+        offset = self._play_counts.get(user_email, 0)
+        new_game_data = startGame(offset=offset)
 
         if new_game_data is None:
             raise GameCreationError("Failed to initialize a new Wordle game.")
 
-        if self._sessions.get(user_email) is not None:
-            raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
-                                detail="Session already created for this user")
         self._sessions[user_email] = SessionEntry(new_game_data)
+        self._play_counts[user_email] = offset + 1
 
         return SessionEntry(
             game_data=new_game_data,
@@ -85,6 +90,7 @@ class WordleSessionSystem:
 
         assert (self._instance)
         self._sessions.clear()
+        self._play_counts.clear()
 
     def debug_print_sessions(self) -> None:
         """DEBUG, prints all sessions"""
