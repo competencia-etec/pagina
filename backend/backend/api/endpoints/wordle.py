@@ -45,7 +45,8 @@ def add_endpoints(router):
         try:
             gd: WordleGameData = ss.get_session(current_user.email).game_data
 
-            gd = ss.validate_word(current_user.email, player_guess.guess)
+            guess = player_guess.guess.strip().lower()
+            gd = ss.validate_word(current_user.email, guess)
 
         except InvalidSession as e:
             raise HTTPException(HTTP_406_NOT_ACCEPTABLE,
@@ -60,7 +61,7 @@ def add_endpoints(router):
                            attempts_remaining=gd.guesses,
                            prev_attempts=gd.prevGuesses)
 
-        if gd.playerWon:
+        if gd.playerWon or gd.guesses == 0:
             ss.finish_session(current_user.email)
 
         return gs

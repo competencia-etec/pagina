@@ -1,7 +1,6 @@
 import { GoogleIcon } from '../../components/GoogleIcon/GoogleIcon.jsx'
-import { useAuth } from '../../context/AuthContext.jsx'
 
-const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL ?? '/login_oauth'
+const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL || '/auth/login_oauth'
 
 function handleGoogleLogin() {
   window.location.href = GOOGLE_OAUTH_URL
@@ -12,8 +11,6 @@ export function LeftPanel() {
 }
 
 export default function LoginPage({ onGoRegister, onGoHome }) {
-  const { login } = useAuth()
-
   return (
     <main className="auth-card" role="main">
       <div className="logo" onClick={onGoHome} style={{ cursor: 'pointer' }} role="button" aria-label="Volver al inicio">
