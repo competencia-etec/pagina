@@ -5,15 +5,18 @@ from .grid_generator import generator as generate_grid
 
 MODULE_PATH = Path(__file__).parent
 ALL_WORDS_FILE = MODULE_PATH / "all_spanish_words.txt"
+FALLBACK_DICT_FILE = MODULE_PATH.parent / "wordle" / "dictionary.txt"
+FALLBACK_ANSW_FILE = MODULE_PATH.parent / "wordle" / "valid-answers.txt"
 
 Grid = List[List[str]]
 Coords = List[Tuple[int, int]]
 LetterCoords = List[Coords]
 
 spanish_dict: set[str] = set()
-if ALL_WORDS_FILE.exists():
-    with ALL_WORDS_FILE.open("r", encoding="utf-8") as f:
-        spanish_dict = {w.strip() for w in f if w.strip()}
+for word_file in (ALL_WORDS_FILE, FALLBACK_DICT_FILE, FALLBACK_ANSW_FILE):
+    if word_file.exists():
+        with word_file.open("r", encoding="utf-8") as f:
+            spanish_dict.update(w.strip().lower() for w in f if w.strip())
 
 
 def _is_adjacent(a: Tuple[int, int], b: Tuple[int, int]) -> bool:
@@ -32,7 +35,7 @@ class StrandsGame:
     HINT_THRESHOLD = 5
 
     def __init__(self):
-        grid, letter_coords, spangram_idx = generate_grid()
+        grid, letter_coords, spangram_idx, theme = generate_grid()
 
         self.grid: Grid = grid
         self.letter_coords: LetterCoords = letter_coords
@@ -44,6 +47,8 @@ class StrandsGame:
         ]
 
         self.revealed: set[str] = set()
+        self.found_paths: List[Coords] = []
+        self.theme: str = theme
         self.bonus_words_count: int = 0
         self.hint_counter: int = 0
 

@@ -54,3 +54,35 @@ export async function finishMaze() {
   const res = await fetchWithAuth('/maze/finish/', { method: 'POST' })
   return res.json()
 }
+
+export async function startStrands() {
+  const res = await fetchWithAuth('/strands/start/', {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  })
+  return res.json()
+}
+
+export async function getStrandsGame() {
+  const res = await fetchWithAuth('/strands/get_game/', {
+    headers: { Accept: 'application/json' },
+  })
+  return res.json()
+}
+
+export async function attemptStrands(coords) {
+  const res = await fetchWithAuth('/strands/attempt/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ coords }),
+  })
+  return res.json()
+}
+
+export async function getStrandsHint() {
+  const res = await fetchWithAuth('/strands/hint/', {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  })
+  return res.json()
+}
